@@ -36,7 +36,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const url = request.nextUrl.clone();
-  const isAuthPage = url.pathname.startsWith('/login') || url.pathname.startsWith('/auth');
+  const isAuthPage = url.pathname.startsWith('/login') || url.pathname.startsWith('/register') || url.pathname.startsWith('/auth');
 
   // Lógica global de protección de rutas (Autorización):
   
