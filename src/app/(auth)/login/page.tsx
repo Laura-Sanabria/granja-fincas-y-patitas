@@ -55,6 +55,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </button>
       </form>
 
+      <div className="flex justify-center -mt-2 mb-2">
+        <a href="/forgot-password" className="text-sm font-medium text-[var(--brand)] hover:underline">
+          ¿Olvidaste tu contraseña?
+        </a>
+      </div>
+
       <div className="mt-4 text-center text-sm opacity-80">
         ¿No tienes cuenta?{' '}
         <Link href="/register" className="font-semibold text-[var(--brand-hover)] hover:underline">

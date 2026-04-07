@@ -19,7 +19,7 @@ export class SupabaseProfileRepository implements IProfileRepository {
     const supabase = this.getClient(supabaseClient);
     
     const { data, error } = await supabase
-      .from('perfiles')
+      .from('profiles')
       .select('*')
       .eq('id', id)
       .single();
@@ -31,7 +31,7 @@ export class SupabaseProfileRepository implements IProfileRepository {
 
   async getAll(supabaseClient?: any): Promise<Profile[]> {
     const supabase = this.getClient(supabaseClient);
-    const { data, error } = await supabase.from('perfiles').select('*');
+    const { data, error } = await supabase.from('profiles').select('*');
     if (error) throw new Error(error.message);
     return ProfileSchema.array().parse(data);
   }
@@ -39,8 +39,8 @@ export class SupabaseProfileRepository implements IProfileRepository {
   async deactivate(id: string, supabaseClient?: any): Promise<void> {
     const supabase = this.getClient(supabaseClient);
     const { error } = await supabase
-      .from('perfiles')
-      .update({ activo: false })
+      .from('profiles')
+      .update({ is_active: false })
       .eq('id', id);
     if (error) throw new Error(error.message);
   }
@@ -48,8 +48,8 @@ export class SupabaseProfileRepository implements IProfileRepository {
   async updateRole(id: string, rol: string, supabaseClient?: any): Promise<void> {
     const supabase = this.getClient(supabaseClient);
     const { error } = await supabase
-      .from('perfiles')
-      .update({ rol })
+      .from('profiles')
+      .update({ role: rol })
       .eq('id', id);
     if (error) throw new Error(error.message);
   }

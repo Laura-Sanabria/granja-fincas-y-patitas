@@ -1,32 +1,13 @@
 'use server';
 
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
 export async function login(formData: FormData) {
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch (error) {}
-        },
-      },
-    }
-  );
+  const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -45,25 +26,7 @@ export async function signup(formData: FormData) {
   const password = formData.get('password') as string;
   const nombre = formData.get('nombre') as string;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch (error) {}
-        },
-      },
-    }
-  );
+  const supabase = await createClient();
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -85,26 +48,43 @@ export async function signup(formData: FormData) {
 }
 
 export async function logout() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch (error) {}
-        },
-      },
-    }
-  );
+  const supabase = await createClient();
 
   await supabase.auth.signOut();
   return redirect('/login');
+}
+
+export async function resetPassword(formData: FormData) {
+  const email = formData.get('email') as string;
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/update-password`,
+  });
+
+  if (error) {
+    console.error("Supabase resetPassword error: ", error);
+    return redirect(`/forgot-password?message=${encodeURIComponent(error.message)}`);
+  }
+
+  return redirect('/forgot-password?success=Revisa tu bandeja de entrada para restablecer la contraseña');
+}
+
+export async function updatePassword(formData: FormData) {
+  const password = formData.get('password') as string;
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.updateUser({
+    password: password
+  });
+
+  if (error) {
+    return redirect('/update-password?message=Error al actualizar la contraseña');
+  }
+
+  // Después de actualizar la clave terminamos su sesión para forzarlo a logearse con la nueva
+  await supabase.auth.signOut();
+  return redirect('/login?message=Contraseña actualizada exitosamente. Por favor, inicia sesión.');
 }
