@@ -23,14 +23,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login');
   }
 
-  // Obtener perfil para Rol y Nombre usando el repositorio de dominio
+  // Obtener perfil para role y full_name usando el repositorio de dominio
   const profileRepo = new SupabaseProfileRepository();
-  const profile = await profileRepo.getById(user.id, supabase);
+  let profile = null;
+  
+  try {
+    profile = await profileRepo.getById(user.id, supabase);
+  } catch (error) {
+    console.error("Error fetching profile in layout:", error);
+  }
 
   const userData = {
     email: user.email!,
-    nombre: profile?.nombre || undefined,
-    rol: profile?.rol || 'EMPLEADO',
+    full_name: profile?.full_name || undefined,
+    role: profile?.role || 'EMPLEADO',
   };
 
   return (

@@ -2,10 +2,6 @@ import { createClient } from '@supabase/supabase-js';
 import { ProfileSchema, type Profile } from '@/types/domain/profile.schema';
 import type { IProfileRepository } from '../IProfileRepository';
 
-// Usaremos un cliente service_role si necesitamos hacer querys administrativas saltando RLS (según el caso de uso)
-// Pero típicamente, con un Server o Browser client con sesion activa es suficiente si las políticas de RLS lo permiten.
-// Aquí usamos el anon+url simple para instanciar (o podriamos inyectar el cliente ya autenticado).
-
 export class SupabaseProfileRepository implements IProfileRepository {
   private getClient(supabaseClient?: any) {
     if (supabaseClient) return supabaseClient;
@@ -31,7 +27,11 @@ export class SupabaseProfileRepository implements IProfileRepository {
 
   async getAll(supabaseClient?: any): Promise<Profile[]> {
     const supabase = this.getClient(supabaseClient);
-    const { data, error } = await supabase.from('profiles').select('*');
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
     if (error) throw new Error(error.message);
     return ProfileSchema.array().parse(data);
   }
@@ -45,11 +45,11 @@ export class SupabaseProfileRepository implements IProfileRepository {
     if (error) throw new Error(error.message);
   }
 
-  async updateRole(id: string, rol: string, supabaseClient?: any): Promise<void> {
+  async updateRole(id: string, role: string, supabaseClient?: any): Promise<void> {
     const supabase = this.getClient(supabaseClient);
     const { error } = await supabase
       .from('profiles')
-      .update({ role: rol })
+      .update({ role: role })
       .eq('id', id);
     if (error) throw new Error(error.message);
   }

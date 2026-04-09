@@ -1,9 +1,11 @@
 'use client';
 
 import { UserCircle, LogOut, Menu } from 'lucide-react';
-import { logout } from '@/actions/auth';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function Header({ user }: { user?: { email: string; nombre?: string; rol?: string } }) {
+export default function Header({ user }: { user?: { email: string; full_name?: string; role?: string } }) {
+  const { signOut } = useAuth();
+  
   const getRoleBadge = (role?: string) => {
     switch (role) {
       case 'ADMINISTRADOR':
@@ -29,9 +31,9 @@ export default function Header({ user }: { user?: { email: string; nombre?: stri
         <div className="hidden sm:flex items-center gap-3">
           <div className="flex flex-col items-end">
             <span className="text-sm font-semibold text-gray-900 leading-tight">
-              {user?.nombre || user?.email || 'Usuario'}
+              {user?.full_name || user?.email || 'Usuario'}
             </span>
-            {getRoleBadge(user?.rol)}
+            {getRoleBadge(user?.role)}
           </div>
           <div className="h-10 w-10 bg-[var(--brand-light)] rounded-full flex items-center justify-center text-[var(--brand)] border border-[var(--brand)]/20 shadow-inner">
             <UserCircle className="h-6 w-6" />
@@ -41,15 +43,13 @@ export default function Header({ user }: { user?: { email: string; nombre?: stri
         {/* Separator */}
         <div className="h-8 border-l border-gray-200 mx-1 hidden sm:block"></div>
 
-        <form action={logout}>
-          <button 
-            type="submit"
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Salir</span>
-          </button>
-        </form>
+        <button 
+          onClick={() => signOut()}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+        >
+          <LogOut className="h-4 w-4" />
+          <span className="hidden sm:inline">Salir</span>
+        </button>
       </div>
     </header>
   );
