@@ -1,15 +1,20 @@
 import { z } from 'zod';
+import { RolEnum } from './user.schema';
 
-export const RolEnum = z.enum(['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO']);
-
+/**
+ * Esquema compatible con la tabla public.profiles
+ */
 export const ProfileSchema = z.object({
   id: z.string().uuid(),
-  nombre: z.string().nullable().optional(),
+  full_name: z.string().nullable().optional(),
   email: z.string().email(),
-  rol: RolEnum.default('EMPLEADO'),
-  activo: z.boolean().default(true),
-  fecha_creacion: z.string().datetime().optional()
+  role: RolEnum.default('EMPLEADO'),
+  is_active: z.boolean().default(true),
+  phone: z.string().nullable().optional(),
+  avatar_url: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 
-export type Rol = z.infer<typeof RolEnum>;
 export type Profile = z.infer<typeof ProfileSchema>;

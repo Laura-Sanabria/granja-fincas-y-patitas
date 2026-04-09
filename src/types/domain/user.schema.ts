@@ -1,35 +1,48 @@
 import { z } from 'zod';
 
-// Roles disponibles en la aplicación
+/**
+ * Roles permitidos en el sistema.
+ * ADMINISTRADOR: Acceso total.
+ * ENCARGADO: Gestión operativa de la granja.
+ * EMPLEADO: Registro de actividades básicas.
+ */
 export const RolEnum = z.enum(['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO']);
+export type Rol = z.infer<typeof RolEnum>;
 
-// Esquema de la entidad base de datos "perfiles"
+/**
+ * Esquema para el perfil de usuario (Tabla public.profiles)
+ * Adaptado a la estructura oficial requerida por el usuario.
+ */
 export const UserSchema = z.object({
   id: z.string().uuid(),
-  nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
-  email: z.string().email('Correo electrónico inválido'),
-  rol: RolEnum,
-  activo: z.boolean().default(true),
-  fecha_creacion: z.string().datetime().optional(), // Puede venir como string ISO de Supabase
+  full_name: z.string().nullable().optional(),
+  email: z.string().email(),
+  role: RolEnum.default('EMPLEADO'),
+  is_active: z.boolean().default(true),
+  phone: z.string().nullable().optional(),
+  avatar_url: z.string().nullable().optional(),
+  address: z.string().nullable().optional(),
+  last_login_at: z.string().nullable().optional(),
+  login_count: z.number().default(0),
+  failed_attempts: z.number().default(0),
+  locked_until: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+  create_by: z.string().uuid().nullable().optional(),
 });
 
 export type UserProfile = z.infer<typeof UserSchema>;
-export type Rol = z.infer<typeof RolEnum>;
 
-// Esquema para el formulario de Login
-export const LoginCredentialsSchema = z.object({
-  email: z.string().email('Por favor ingresa un correo electrónico válido'),
+/**
+ * Esquemas para validación de formularios de Auth
+ */
+export const LoginSchema = z.object({
+  email: z.string().email('Correo electrónico no válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
 
-export type LoginCredentials = z.infer<typeof LoginCredentialsSchema>;
-
-// Esquema para crear un nuevo usuario/empleado
-export const RegisterUserSchema = z.object({
-  nombre: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-  email: z.string().email('Por favor ingresa un correo electrónico válido'),
+export const RegisterSchema = z.object({
+  full_name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
+  email: z.string().email('Correo electrónico no válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-  rol: RolEnum.default('EMPLEADO'),
 });
-
-export type RegisterUser = z.infer<typeof RegisterUserSchema>;

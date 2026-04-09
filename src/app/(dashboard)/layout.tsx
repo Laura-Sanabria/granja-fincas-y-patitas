@@ -1,5 +1,6 @@
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import DashboardShell from '@/components/layout/DashboardShell';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { SupabaseProfileRepository } from '@/repositories/supabase/ProfileRepository';
@@ -23,27 +24,28 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login');
   }
 
-  // Obtener perfil para Rol y Nombre usando el repositorio de dominio
+  // Obtener perfil para role y full_name usando el repositorio de dominio
   const profileRepo = new SupabaseProfileRepository();
-  const profile = await profileRepo.getById(user.id, supabase);
+  let profile = null;
+  
+  try {
+    profile = await profileRepo.getById(user.id, supabase);
+  } catch (error) {
+    console.error("Error fetching profile in layout:", error);
+  }
 
   const userData = {
     email: user.email!,
-    nombre: profile?.nombre || undefined,
-    rol: profile?.rol || 'EMPLEADO',
+    full_name: profile?.full_name || undefined,
+    role: profile?.role || 'EMPLEADO',
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
-      <Sidebar />
-      <div className="flex-1 flex flex-col w-0 overflow-hidden">
-        <Header user={userData} />
-        <main className="flex-1 overflow-y-auto bg-[var(--brand-50)]/30">
-          <div className="p-6 md:p-8 max-w-7xl mx-auto animate-fade-in">
-            {children}
-          </div>
-        </main>
-      </div>
-    </div>
+    <DashboardShell 
+      header={<Header user={userData} />} 
+      sidebar={<Sidebar />}
+    >
+      {children}
+    </DashboardShell>
   );
 }

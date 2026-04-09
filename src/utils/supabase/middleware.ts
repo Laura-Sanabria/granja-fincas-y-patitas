@@ -36,7 +36,14 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const url = request.nextUrl.clone();
-  const isAuthPage = url.pathname.startsWith('/login') || url.pathname.startsWith('/register') || url.pathname.startsWith('/auth') || url.pathname.startsWith('/forgot-password') || url.pathname.startsWith('/update-password');
+  const pathname = url.pathname;
+  
+  // Definición de rutas de autenticación
+  const isAuthPage = pathname.startsWith('/login') || 
+                     pathname.startsWith('/register') || 
+                     pathname.startsWith('/auth') || 
+                     pathname.startsWith('/forgot-password') || 
+                     pathname.startsWith('/update-password');
 
   // Lógica global de protección de rutas (Autorización):
   
@@ -46,10 +53,35 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 2. Si SÍ hay usuario y trata de ir a /login, llevarlo al root/dashboard
-  if (user && isAuthPage) {
-    url.pathname = '/'; 
-    return NextResponse.redirect(url);
+  // 2. Si SÍ hay usuario, validar permisos y roles
+  if (user) {
+    // Si intenta ir a /login ya estando autenticado, llevarlo al dashboard
+    if (isAuthPage) {
+      url.pathname = '/dashboard'; 
+      return NextResponse.redirect(url);
+    }
+
+    // Validación de ROLES (RBAC) para rutas del dashboard
+    if (pathname.startsWith('/dashboard')) {
+      // Consultar el rol en la tabla 'profiles'
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      const userRole = profile?.role;
+
+      // Definición de rutas restringidas
+      const adminOnlyRoutes = ['/dashboard/usuarios', '/dashboard/configuracion'];
+      const isAdminRoute = adminOnlyRoutes.some(route => pathname.startsWith(route));
+
+      // Si es una ruta de Admin y el usuario NO es ADMINISTRADOR, denegar acceso
+      if (isAdminRoute && userRole !== 'ADMINISTRADOR') {
+        url.pathname = '/acceso-denegado';
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   return supabaseResponse;

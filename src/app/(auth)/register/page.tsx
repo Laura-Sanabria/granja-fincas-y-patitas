@@ -24,15 +24,29 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
         )}
         
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium" htmlFor="nombre">Nombre completo</label>
+          <label className="text-sm font-medium" htmlFor="full_name">Nombre completo</label>
           <input 
             type="text" 
-            name="nombre" 
-            id="nombre" 
+            name="full_name" 
+            id="full_name" 
             required 
             placeholder="Juan Pérez"
             className="w-full px-4 py-2.5 rounded-lg border border-[var(--glass-border)] bg-white/50 focus:bg-white/80 focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all"
           />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium" htmlFor="role">Rol en la finca</label>
+          <select 
+            name="role" 
+            id="role" 
+            required 
+            className="w-full px-4 py-2.5 rounded-lg border border-[var(--glass-border)] bg-white/50 focus:bg-white/80 focus:ring-2 focus:ring-[var(--brand)] outline-none transition-all cursor-pointer"
+          >
+            <option value="EMPLEADO">Empleado</option>
+            <option value="ENCARGADO">Encargado</option>
+            <option value="ADMINISTRADOR">Administrador</option>
+          </select>
         </div>
 
         <div className="flex flex-col gap-1.5">
