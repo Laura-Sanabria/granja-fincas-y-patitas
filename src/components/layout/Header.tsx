@@ -3,7 +3,12 @@
 import { UserCircle, LogOut, Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function Header({ user }: { user?: { email: string; full_name?: string; role?: string } }) {
+interface HeaderProps {
+  user?: { email: string; full_name?: string; role?: string };
+  onMenuToggle?: () => void;
+}
+
+export default function Header({ user, onMenuToggle }: HeaderProps) {
   const { signOut } = useAuth();
   
   const getRoleBadge = (role?: string) => {
@@ -21,8 +26,12 @@ export default function Header({ user }: { user?: { email: string; full_name?: s
     <header className="h-16 bg-white border-b border-[var(--glass-border)] flex items-center justify-between px-6 shadow-sm z-10">
       <div className="flex items-center gap-4">
         {/* Mobile menu trigger */}
-        <button className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
-          <Menu className="h-5 w-5" />
+        <button 
+          onClick={onMenuToggle}
+          className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Toggle menu"
+        >
+          <Menu className="h-6 w-6" />
         </button>
         <h2 className="text-xl font-semibold text-gray-800 tracking-tight hidden sm:block">Panel de Control</h2>
       </div>

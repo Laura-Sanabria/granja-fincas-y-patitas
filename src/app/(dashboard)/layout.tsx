@@ -1,5 +1,6 @@
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
+import DashboardShell from '@/components/layout/DashboardShell';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { SupabaseProfileRepository } from '@/repositories/supabase/ProfileRepository';
@@ -40,16 +41,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--background)]">
-      <Sidebar />
-      <div className="flex-1 flex flex-col w-0 overflow-hidden">
-        <Header user={userData} />
-        <main className="flex-1 overflow-y-auto bg-[var(--brand-50)]/30">
-          <div className="p-6 md:p-8 max-w-7xl mx-auto animate-fade-in">
-            {children}
-          </div>
-        </main>
-      </div>
-    </div>
+    <DashboardShell 
+      header={<Header user={userData} />} 
+      sidebar={<Sidebar />}
+    >
+      {children}
+    </DashboardShell>
   );
 }

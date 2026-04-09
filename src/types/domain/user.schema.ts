@@ -22,12 +22,12 @@ export const UserSchema = z.object({
   phone: z.string().nullable().optional(),
   avatar_url: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
-  last_login_at: z.string().datetime().nullable().optional(),
+  last_login_at: z.string().nullable().optional(),
   login_count: z.number().default(0),
   failed_attempts: z.number().default(0),
-  locked_until: z.string().datetime().nullable().optional(),
-  created_at: z.string().datetime().optional(),
-  updated_at: z.string().datetime().optional(),
+  locked_until: z.string().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
   create_by: z.string().uuid().nullable().optional(),
 });
 

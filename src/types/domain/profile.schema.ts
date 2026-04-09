@@ -13,8 +13,8 @@ export const ProfileSchema = z.object({
   phone: z.string().nullable().optional(),
   avatar_url: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
-  created_at: z.string().datetime().optional(),
-  updated_at: z.string().datetime().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
 });
 
 export type Profile = z.infer<typeof ProfileSchema>;
