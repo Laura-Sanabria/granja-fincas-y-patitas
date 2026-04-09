@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import React from 'react';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 interface DashboardShellProps {
   sidebar: React.ReactElement;
@@ -14,26 +14,12 @@ interface DashboardShellProps {
  * para manejar estados interactivos como el menú lateral en móvil.
  */
 export default function DashboardShell({ sidebar, header, children }: DashboardShellProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Cerrar el sidebar automáticamente cuando cambie la ruta (navegación)
-  useEffect(() => {
-    setIsSidebarOpen(false);
-  }, [pathname]);
-
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const closeSidebar = () => setIsSidebarOpen(false);
+  const { isSidebarOpen, closeSidebar } = useSidebar();
 
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--background)]">
-      {/* Sidebar con props inyectadas mediante clonación para pasar el estado */}
-      {sidebar && React.isValidElement(sidebar) ? 
-        React.cloneElement(sidebar as React.ReactElement<any>, { 
-          isOpen: isSidebarOpen, 
-          onClose: closeSidebar 
-        }) : null
-      }
+      {/* Sidebar - Ahora el Sidebar mismo maneja su estado vía hook */}
+      {sidebar}
 
       {/* Overlay para móvil */}
       {isSidebarOpen && (
@@ -44,12 +30,8 @@ export default function DashboardShell({ sidebar, header, children }: DashboardS
       )}
 
       <div className="flex-1 flex flex-col w-0 overflow-hidden">
-        {/* Header con toggle del menú */}
-        {header && React.isValidElement(header) ? 
-          React.cloneElement(header as React.ReactElement<any>, { 
-            onMenuToggle: toggleSidebar 
-          }) : null
-        }
+        {/* Header - Ahora el Header mismo maneja el toggle vía hook */}
+        {header}
 
         <main className="flex-1 overflow-y-auto bg-[var(--brand-50)]/30 scroll-smooth">
           <div className="p-6 md:p-8 max-w-7xl mx-auto animate-fade-in">

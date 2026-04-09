@@ -1,8 +1,11 @@
+import React from 'react';
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import DashboardShell from '@/components/layout/DashboardShell';
+import DashboardLoading from './loading';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { SidebarProvider } from '@/contexts/SidebarContext';
 import { SupabaseProfileRepository } from '@/repositories/supabase/ProfileRepository';
 import { redirect } from 'next/navigation';
 
@@ -41,11 +44,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   };
 
   return (
-    <DashboardShell 
-      header={<Header user={userData} />} 
-      sidebar={<Sidebar />}
-    >
-      {children}
-    </DashboardShell>
+    <SidebarProvider>
+      <DashboardShell 
+        header={<Header user={userData} />} 
+        sidebar={<Sidebar />}
+      >
+        <React.Suspense fallback={<DashboardLoading />}>
+          {children}
+        </React.Suspense>
+      </DashboardShell>
+    </SidebarProvider>
   );
 }

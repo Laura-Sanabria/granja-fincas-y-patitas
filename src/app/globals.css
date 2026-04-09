@@ -1,13 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8faf8; /* Soft off-white farm background */
-  --foreground: #1c261e; /* Deep green-grey for standard text */
+  --background: #FAF9F6; /* Soft sand off-white */
+  --foreground: #1c261e; /* Deep green-grey */
   --brand: #4a7c59; /* Brand Olive Green */
   --brand-hover: #3a6245;
   --brand-light: #e4efe4;
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.4);
+  --sidebar-bg: #F5F5F0; /* Creamy beige for sidebar */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.05);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,6 +29,7 @@
   --color-brand: var(--brand);
   --color-brand-hover: var(--brand-hover);
   --color-brand-light: var(--brand-light);
+  --color-sidebar-bg: var(--sidebar-bg);
   --color-glass-bg: var(--glass-bg);
   --color-glass-border: var(--glass-border);
   --font-sans: 'Inter', system-ui, sans-serif;
