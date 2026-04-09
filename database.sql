@@ -51,9 +51,11 @@ begin
     new.id, 
     new.email, 
     coalesce(new.raw_user_meta_data->>'nombre', new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-    -- Si es el primer usuario en la BD, hacerlo ADMINISTRADOR
-    case when not exists (select 1 from public.profiles) then 'ADMINISTRADOR'
-    else 'EMPLEADO' end,
+    -- Si viene un rol en la metadata, usarlo. Si no, aplicar lógica por defecto.
+    coalesce(
+      new.raw_user_meta_data->>'role',
+      case when not exists (select 1 from public.profiles) then 'ADMINISTRADOR' else 'EMPLEADO' end
+    ),
     true,
     now(),
     now()
