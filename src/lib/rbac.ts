@@ -9,10 +9,10 @@ export const ROUTE_PERMISSIONS: Record<string, Rol[]> = {
   '/dashboard/configuracion': ['ADMINISTRADOR'],
   // Rutas que pueden ver todos los roles autenticados
   '/dashboard': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
-  '/dashboard/animales': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
+  '/dashboard/inventario': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
   '/dashboard/insumos': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
   '/dashboard/produccion': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
-  '/dashboard/reproduccion': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
+  '/dashboard/reproductivo': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
 };
 
 /**
