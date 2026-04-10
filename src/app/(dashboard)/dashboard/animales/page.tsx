@@ -1,33 +1,58 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { RoleGuard } from '@/components/RoleGuard';
 import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Badge from '@/components/ui/Badge';
-import { Beef, Filter, Activity, Plus } from 'lucide-react';
-import { mockAnimals, MockAnimal } from '@/lib/mock-data';
+import { Beef, Filter, Activity, Plus, Loader2 } from 'lucide-react';
+import { SupabaseAnimalRepository } from '@/repositories/supabase/AnimalRepository';
+import { createClient } from '@/utils/supabase/client';
+import { AnimalWithRelations } from '@/types/domain/animal.schema';
+import AnimalFormModal from '@/components/animales/AnimalFormModal';
 
 export default function AnimalesPage() {
   const router = useRouter();
   const [filterSpecies, setFilterSpecies] = useState<string>('Todas');
+  
+  const [animals, setAnimals] = useState<AnimalWithRelations[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const speciesOptions = ['Todas', ...Array.from(new Set(mockAnimals.map(a => a.species_name)))];
+  const [repo] = useState(() => new SupabaseAnimalRepository(createClient()));
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const data = await repo.getAll();
+      setAnimals(data);
+    } catch (error) {
+      console.error("Error cargando animales:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const speciesOptions = ['Todas', ...Array.from(new Set(animals.map(a => a.species?.name).filter(Boolean)))];
 
   const filteredAnimals = useMemo(() => {
-    if (filterSpecies === 'Todas') return mockAnimals;
-    return mockAnimals.filter(a => a.species_name === filterSpecies);
-  }, [filterSpecies]);
+    if (filterSpecies === 'Todas') return animals;
+    return animals.filter(a => a.species?.name === filterSpecies);
+  }, [filterSpecies, animals]);
 
-  const columns: Column<MockAnimal>[] = [
+  const columns: Column<AnimalWithRelations>[] = [
     {
       key: 'name',
       header: 'Identificación',
       render: (a) => (
         <div className="flex flex-col">
-          <span className="font-extrabold text-gray-900">{a.name}</span>
-          <span className="text-xs font-bold text-gray-400 font-mono">{a.code}</span>
+          <span className="font-extrabold text-gray-900">{a.name || 'Sin nombre'}</span>
+          <span className="text-xs font-bold text-[var(--brand)] font-mono">{a.code}</span>
         </div>
       )
     },
@@ -36,8 +61,8 @@ export default function AnimalesPage() {
       header: 'Especie / Raza',
       render: (a) => (
         <div className="flex flex-col">
-          <span className="font-bold text-gray-700">{a.species_name}</span>
-          <span className="text-xs font-medium text-gray-500">{a.breed}</span>
+          <span className="font-bold text-gray-700">{a.species?.display_name || 'Desconocida'}</span>
+          <span className="text-xs font-medium text-gray-500">{a.breed?.name || 'Mestiza/Sin definir'}</span>
         </div>
       )
     },
@@ -52,7 +77,9 @@ export default function AnimalesPage() {
       key: 'age',
       header: 'Edad / Nacimiento',
       render: (a) => {
-        // Calcular edad simple (meses/años)
+        if (!a.birth_date) {
+          return <span className="text-xs text-gray-400">Sin registro</span>;
+        }
         const birthDate = new Date(a.birth_date);
         const today = new Date();
         const diffTime = Math.abs(today.getTime() - birthDate.getTime());
@@ -105,13 +132,16 @@ export default function AnimalesPage() {
 
   return (
     <RoleGuard allowedRoles={['ADMINISTRADOR']} redirectPath="/acceso-denegado">
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in pb-10">
         <PageHeader 
           title="Inventario Pecuario"
           description="Visualiza el registro completo de animales, filtra por especies y monitorea el estado de salud, vacunación y mortalidad."
           icon={Beef}
           actions={
-            <button className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm"
+            >
               <Plus size={18} />
               <span>Registrar Animal</span>
             </button>
@@ -129,23 +159,26 @@ export default function AnimalesPage() {
               onChange={(e) => setFilterSpecies(e.target.value)}
               className="bg-gray-50 border border-black/5 rounded-xl px-4 py-2 font-bold text-gray-700 outline-none focus:border-[var(--brand)] transition-colors min-w-[200px]"
             >
-              {speciesOptions.map(opt => (
-                <option key={opt} value={opt}>{opt === 'Todas' ? 'Todas las especies' : opt}</option>
+              <option value="Todas">Todas las especies</option>
+              {speciesOptions.filter(opt => opt !== 'Todas').map(opt => (
+                <option key={opt as string} value={opt as string}>{opt}</option>
               ))}
             </select>
           </div>
           
           <div className="flex items-center gap-6 px-4 w-full lg:w-auto overflow-x-auto">
             <div className="flex flex-col">
-              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Total Mostrados</span>
+              <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Total Registrados</span>
               <span className="text-xl font-black text-gray-900 leading-none mt-1">{filteredAnimals.length}</span>
             </div>
             <div className="w-[1px] h-8 bg-gray-100" />
             <div className="flex flex-col">
               <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                Tasa Mortalidad (30d) <Activity size={12} className="text-red-400" />
+                Tasa Mortalidad (30d) <Activity size={12} className="text-[var(--brand)] ml-1" />
               </span>
-              <span className="text-xl font-black text-red-500 leading-none mt-1">1.2%</span>
+              <span className="text-xl font-black text-gray-900 leading-none mt-1">
+                N/A
+              </span>
             </div>
             <div className="w-[1px] h-8 bg-gray-100" />
             <div className="flex flex-col">
@@ -153,18 +186,30 @@ export default function AnimalesPage() {
                 Vacunas Pendientes
               </span>
               <span className="text-xl font-black text-orange-500 leading-none mt-1">
-                {mockAnimals.filter(a => a.vaccination_status !== 'al_dia').length}
+                {animals.filter(a => a.vaccination_status !== 'al_dia' && a.status === 'activo').length}
               </span>
             </div>
           </div>
         </div>
 
-        <DataTable 
-          columns={columns}
-          data={filteredAnimals}
-          keyExtractor={(a) => a.id}
-          onRowClick={(a) => router.push(`/dashboard/animales/${a.id}`)}
-          emptyMessage="No se encontraron animales para esta selección."
+        {loading ? (
+          <div className="flex justify-center p-20">
+            <Loader2 className="animate-spin text-[var(--brand)] w-10 h-10" />
+          </div>
+        ) : (
+          <DataTable 
+            columns={columns}
+            data={filteredAnimals}
+            keyExtractor={(a) => a.id}
+            onRowClick={(a) => router.push(`/dashboard/animales/${a.id}`)}
+            emptyMessage="No se encontraron animales registrados."
+          />
+        )}
+
+        <AnimalFormModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          onSuccess={loadData} 
         />
       </div>
     </RoleGuard>
