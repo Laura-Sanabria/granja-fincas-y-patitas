@@ -57,4 +57,24 @@ export async function logout() {
   return redirect('/login');
 }
 
-// ... resto de funciones (resetPassword, updatePassword) permanecen igual si no tocan perfiles directamente
+export async function resetPassword(formData: FormData) {
+  const email = formData.get('email') as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/update-password`,
+  });
+  if (error) {
+    return redirect(`/forgot-password?message=${encodeURIComponent(error.message)}`);
+  }
+  return redirect('/forgot-password?message=Revisa tu correo para restablecer la contraseña');
+}
+
+export async function updatePassword(formData: FormData) {
+  const password = formData.get('password') as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return redirect(`/update-password?message=${encodeURIComponent(error.message)}`);
+  }
+  return redirect('/dashboard');
+}
