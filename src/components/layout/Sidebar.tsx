@@ -1,82 +1,122 @@
 'use client';
 
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Tractor, 
-  Settings, 
-  ClipboardList, 
+import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { canAccess } from '@/lib/rbac';
+import {
+  Tractor,
+  Settings,
+  ClipboardList,
   Sprout,
   EggFried,
   X,
-  Users
+  Users,
+  Beef,
+  PackageSearch,
+  Bell,
+  Activity,
+  UserCheck,
+  CheckSquare,
+  UtensilsCrossed,
+  Clock,
+  Heart,
+  BarChart3,
+  LayoutDashboard,
 } from 'lucide-react';
+import { Rol } from '@/types/domain/user.schema';
+import { LucideIcon } from 'lucide-react';
 
-interface SidebarProps {
-  isOpen?: boolean;
-  onClose?: () => void;
+interface NavItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
 }
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const pathname = usePathname();
+const adminNavItems: NavItem[] = [
+  { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Usuarios', href: '/dashboard/usuarios', icon: Users },
+  { name: 'Animales', href: '/dashboard/animales', icon: Beef },
+  { name: 'Insumos', href: '/dashboard/insumos', icon: PackageSearch },
+  { name: 'Producción', href: '/dashboard/produccion', icon: EggFried },
+  { name: 'Reproducción', href: '/dashboard/reproduccion', icon: Sprout },
+  { name: 'Personal', href: '/dashboard/personal', icon: UserCheck },
+  { name: 'Alertas', href: '/dashboard/alertas', icon: Bell },
+  { name: 'Actividad', href: '/dashboard/actividad', icon: Activity },
+];
 
-  const navItems = [
-    { name: 'Inicio', href: '/dashboard', icon: Tractor },
-    { name: 'Gestión de Personal', href: '/dashboard/usuarios', icon: Users },
-    { name: 'Inventario (Animales)', href: '/dashboard/inventario', icon: Tractor },
-    { name: 'Insumos y Bodega', href: '/dashboard/insumos', icon: ClipboardList },
-    { name: 'Producción', href: '/dashboard/produccion', icon: EggFried },
-    { name: 'Reproductivo', href: '/dashboard/reproductivo', icon: Sprout },
-    { name: 'Configuración', href: '/dashboard/configuracion', icon: Settings },
-  ];
+const employeeNavItems: NavItem[] = [
+  { name: 'Gestión Diaria', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Tareas', href: '/dashboard/empleado/tareas', icon: CheckSquare },
+  { name: 'Alimentación', href: '/dashboard/empleado/alimentacion', icon: UtensilsCrossed },
+  { name: 'Turnos', href: '/dashboard/empleado/turnos', icon: Clock },
+  { name: 'Animales a Cargo', href: '/dashboard/empleado/animales', icon: Beef },
+  { name: 'Salud Animal', href: '/dashboard/empleado/salud', icon: Heart },
+  { name: 'Producción', href: '/dashboard/empleado/produccion', icon: BarChart3 },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const { role, loading } = useAuth();
+  const { isSidebarOpen, closeSidebar } = useSidebar();
+
+  // Seleccionar menú según rol
+  const navItems = role === 'ADMINISTRADOR' ? adminNavItems : employeeNavItems;
+
+  // Mostrar los ítems siempre en el sidebar para el rol respectivo
+  const filteredNavItems = navItems;
 
   return (
     <>
-      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-[var(--glass-border)] transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col h-full shadow-xl md:shadow-sm transition-all`}>
-        <div className="h-16 flex items-center justify-between px-6 border-b border-[var(--glass-border)] bg-[var(--brand)] text-white gap-3">
+      <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-[var(--sidebar-bg)] border-r border-[var(--glass-border)] transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} flex flex-col h-full shadow-sm transition-all`}>
+        <div className="h-24 flex items-center justify-between px-6 pt-2">
           <div className="flex items-center gap-3">
-            <Tractor className="h-6 w-6" />
-            <span className="font-bold text-lg tracking-tight">Granja F & P</span>
+            <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center shadow-sm border border-black/5">
+              <Tractor className="h-6 w-6 text-[var(--brand)]" />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-bold text-base text-gray-800 tracking-tight leading-none">Fincas y Patitas</span>
+              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">
+                {role === 'ADMINISTRADOR' ? 'Panel Admin' : 'Panel Empleado'}
+              </span>
+            </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="md:hidden p-1 hover:bg-white/20 rounded-lg transition-colors"
+          <button
+            onClick={closeSidebar}
+            className="md:hidden p-1 hover:bg-gray-200 rounded-lg transition-colors text-gray-500"
           >
-            {X ? <X className="h-6 w-6" /> : <span>X</span>}
+            <X className="h-5 w-5" />
           </button>
         </div>
-        
-        <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1.5">
-          <div className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Módulos
-          </div>
-          
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+
+        <nav className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1">
+          {filteredNavItems.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
-                onClick={onClose}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive 
-                    ? 'bg-[var(--brand-light)] text-[var(--brand-hover)] border border-[var(--brand)]/20' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                onClick={closeSidebar}
+                className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-white text-gray-900 shadow-sm border border-black/5' : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}`}
               >
-                {item.icon ? (
-                  <item.icon className={`h-5 w-5 ${isActive ? 'text-[var(--brand)]' : 'text-gray-500'}`} />
-                ) : (
-                  <div className="w-5 h-5 bg-gray-200 rounded" />
+                {/* Active indicator bar */}
+                {isActive && (
+                  <div className="absolute left-0 w-1.5 h-8 bg-[var(--brand)] rounded-r-full" />
                 )}
-                {item.name}
+
+                <item.icon className={`h-5 w-5 transition-colors ${isActive ? 'text-[var(--brand)]' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                <span className="text-[11px] uppercase tracking-wider font-bold">{item.name}</span>
               </Link>
             );
           })}
         </nav>
-        
-        <div className="p-4 border-t border-[var(--glass-border)] text-xs text-gray-400 text-center">
-          &copy; {new Date().getFullYear()} Granja F&P v1.0
+
+        <div className="p-4 px-6 border-t border-[var(--glass-border)] flex flex-col gap-4 bg-white/30">
+          <div className="text-[10px] font-bold text-gray-400 text-center uppercase tracking-widest opacity-60 pb-2">
+            &copy; {new Date().getFullYear()} Fincas y Patitas
+          </div>
         </div>
       </aside>
     </>

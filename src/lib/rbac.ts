@@ -5,14 +5,27 @@ import { Rol } from '@/types/domain/user.schema';
  * Esto permite centralizar la lógica de quién puede ver qué.
  */
 export const ROUTE_PERMISSIONS: Record<string, Rol[]> = {
+  // ===== Rutas Admin =====
   '/dashboard/usuarios': ['ADMINISTRADOR'],
+  '/dashboard/animales': ['ADMINISTRADOR'],
+  '/dashboard/insumos': ['ADMINISTRADOR'],
+  '/dashboard/produccion': ['ADMINISTRADOR'],
+  '/dashboard/reproduccion': ['ADMINISTRADOR'],
+  '/dashboard/personal': ['ADMINISTRADOR'],
+  '/dashboard/alertas': ['ADMINISTRADOR'],
+  '/dashboard/actividad': ['ADMINISTRADOR'],
   '/dashboard/configuracion': ['ADMINISTRADOR'],
-  // Rutas que pueden ver todos los roles autenticados
+
+  // ===== Rutas Empleado / Encargado =====
+  '/dashboard/empleado/tareas': ['EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/alimentacion': ['EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/turnos': ['EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/animales': ['EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/salud': ['EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/produccion': ['EMPLEADO', 'ENCARGADO'],
+
+  // ===== Ruta base accesible para todos =====
   '/dashboard': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
-  '/dashboard/animales': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
-  '/dashboard/insumos': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
-  '/dashboard/produccion': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
-  '/dashboard/reproduccion': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
 };
 
 /**

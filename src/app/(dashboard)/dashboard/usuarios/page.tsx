@@ -4,15 +4,20 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile, Rol, RolEnum } from '@/types/domain/user.schema';
 import { profileService } from '@/services/profileService';
 import { RoleGuard } from '@/components/RoleGuard';
-import { Users, UserCog, Check, AlertCircle, Loader2, Phone, MapPin } from 'lucide-react';
+import { Users, Loader2, UserCog, UserPlus } from 'lucide-react';
+import PageHeader from '@/components/ui/PageHeader';
+import DataTable, { Column } from '@/components/ui/DataTable';
+import Badge from '@/components/ui/Badge';
+import Modal from '@/components/ui/Modal';
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-
-  const roles = RolEnum.options;
+  
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchUsuarios = async () => {
     try {
@@ -44,119 +49,158 @@ export default function UsuariosPage() {
     }
   };
 
-  const getRoleBadgeClass = (role: Rol) => {
-    switch (role) {
-      case 'ADMINISTRADOR': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
-      case 'ENCARGADO': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'EMPLEADO': return 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400';
-      default: return 'bg-zinc-100 text-zinc-700';
+  const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+    try {
+      setUpdatingId(userId);
+      // Asumiendo que el servicio tiene un método toggleStatus, u omitimos esto visualmente por ahora
+      // await profileService.toggleStatus(userId, !currentStatus);
+      
+      // Simulando cambo local por ahora
+      setUsuarios(prev => 
+        prev.map(u => u.id === userId ? { ...u, is_active: !currentStatus } : u)
+      );
+    } catch (err: any) {
+      alert(`Error al actualizar el estado: ${err.message}`);
+    } finally {
+      setUpdatingId(null);
     }
   };
 
-  return (
-    <RoleGuard allowedRoles={['ADMINISTRADOR']} redirectPath="/acceso-denegado">
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+  const columns: Column<UserProfile>[] = [
+    {
+      key: 'user',
+      header: 'Usuario',
+      render: (u) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#E4EFE4]/60 flex items-center justify-center text-lg font-black text-[var(--brand)] uppercase">
+            {u.full_name?.charAt(0) || '?'}
+          </div>
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Users className="w-8 h-8 text-zinc-400" />
-              Gestión de Personal
-            </h1>
-            <p className="text-zinc-500 dark:text-zinc-400 mt-1">
-              Administra los accesos y roles de los usuarios del sistema.
-            </p>
+            <p className="font-extrabold text-gray-900">{u.full_name || 'Sin nombre'}</p>
+            <p className="text-xs font-bold text-gray-400">{u.email}</p>
           </div>
         </div>
-
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden text-sm">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center p-20 gap-4">
-              <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
-              <p className="text-zinc-400 font-medium">Cargando lista de usuarios...</p>
-            </div>
-          ) : error ? (
-            <div className="p-12 text-center text-red-500 flex flex-col items-center gap-2">
-              <AlertCircle className="w-12 h-12" />
-              <p className="font-semibold">{error}</p>
-              <button 
-                onClick={fetchUsuarios}
-                className="mt-4 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg hover:bg-zinc-200 transition-colors"
-              >
-                Reintentar
-              </button>
-            </div>
+      )
+    },
+    {
+      key: 'phone',
+      header: 'Contacto',
+      render: (u) => <span className="font-medium text-gray-500">{u.phone || 'No registrado'}</span>
+    },
+    {
+      key: 'role',
+      header: 'Rol',
+      render: (u) => {
+        let variant: 'purple' | 'info' | 'neutral' = 'neutral';
+        if (u.role === 'ADMINISTRADOR') variant = 'purple';
+        if (u.role === 'ENCARGADO') variant = 'info';
+        
+        return <Badge variant={variant} dot>{u.role}</Badge>;
+      }
+    },
+    {
+      key: 'status',
+      header: 'Estado',
+      render: (u) => (
+        <Badge variant={u.is_active ? 'success' : 'danger'} dot>
+          {u.is_active ? 'Activo' : 'Inactivo'}
+        </Badge>
+      )
+    },
+    {
+      key: 'actions',
+      header: '',
+      className: 'text-right',
+      render: (u) => (
+        <div className="flex justify-end gap-3 items-center">
+          {updatingId === u.id ? (
+            <Loader2 className="w-5 h-5 animate-spin text-[var(--brand)]" />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
-                    <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">Usuario</th>
-                    <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">Contacto y Dirección</th>
-                    <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400">Rol</th>
-                    <th className="px-6 py-4 font-semibold text-zinc-600 dark:text-zinc-400 text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 text-base">
-                  {usuarios.map((u) => (
-                    <tr key={u.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-lg font-bold text-zinc-400 border border-zinc-200 dark:border-zinc-700 uppercase">
-                            {u.full_name?.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-zinc-900 dark:text-zinc-100">{u.full_name || 'Sin nombre'}</p>
-                            <p className="text-xs text-zinc-500">{u.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-3 h-3" /> {u.phone || 'N/A'}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-3 h-3" /> {u.address || 'N/A'}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getRoleBadgeClass(u.role)}`}>
-                          {u.role}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2 items-center">
-                          {updatingId === u.id ? (
-                            <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
-                          ) : (
-                            <div className="relative group">
-                              <select
-                                value={u.role}
-                                onChange={(e) => handleRoleChange(u.id, e.target.value as Rol)}
-                                className="appearance-none bg-zinc-100 dark:bg-zinc-800 border-none rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-50 transition-all font-medium cursor-pointer text-sm"
-                              >
-                                {roles.map(rol => (
-                                  <option key={rol} value={rol}>{rol}</option>
-                                ))}
-                              </select>
-                              <UserCog className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none group-hover:text-zinc-900 dark:group-hover:text-zinc-50 transition-colors" />
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {usuarios.length === 0 && (
-                <div className="p-12 text-center text-zinc-400 italic">
-                  No se encontraron usuarios registrados.
-                </div>
-              )}
-            </div>
+            <>
+              <select
+                value={u.role}
+                onChange={(e) => handleRoleChange(u.id, e.target.value as Rol)}
+                className="bg-gray-50 border border-black/5 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-600 focus:ring-2 focus:ring-[var(--brand)] outline-none cursor-pointer"
+              >
+                {RolEnum.options.map(rol => (
+                  <option key={rol} value={rol}>{rol}</option>
+                ))}
+              </select>
+              <button 
+                onClick={() => handleToggleStatus(u.id, u.is_active)}
+                className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition-colors ${u.is_active ? 'border-red-200 text-red-600 hover:bg-red-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'}`}
+              >
+                {u.is_active ? 'Desactivar' : 'Activar'}
+              </button>
+            </>
           )}
         </div>
+      )
+    }
+  ];
+
+  return (
+    <RoleGuard allowedRoles={['ADMINISTRADOR']} redirectPath="/acceso-denegado">
+      <div className="space-y-6 animate-fade-in">
+        <PageHeader 
+          title="Personal y Usuarios"
+          description="Administra los accesos y roles de los usuarios del sistema. Desactiva cuentas cuando sea necesario."
+          icon={Users}
+          actions={
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 bg-[var(--brand)] hover:bg-[var(--brand-hover)] text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm"
+            >
+              <UserPlus size={18} />
+              <span>Nuevo Usuario</span>
+            </button>
+          }
+        />
+
+        {loading ? (
+          <div className="flex items-center justify-center p-20">
+            <Loader2 className="w-8 h-8 animate-spin text-[var(--brand)]" />
+          </div>
+        ) : error ? (
+           <div className="p-8 text-center text-red-500 bg-red-50 rounded-2xl border border-red-100 font-bold">
+            {error}
+           </div>
+        ) : (
+          <DataTable 
+            columns={columns}
+            data={usuarios}
+            keyExtractor={(u) => u.id}
+          />
+        )}
+
+        <Modal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          title="Crear Nuevo Usuario"
+        >
+          <div className="flex flex-col gap-4">
+            <div>
+              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Nombre Completo</label>
+              <input type="text" className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-[var(--brand)] outline-none" placeholder="Ej. Juan Pérez" />
+            </div>
+            <div>
+              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Correo Electrónico</label>
+              <input type="email" className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-[var(--brand)] outline-none" placeholder="juan@ejemplo.com" />
+            </div>
+             <div>
+              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Rol Inicial</label>
+              <select className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[var(--brand)] outline-none uppercase">
+                {RolEnum.options.map(rol => (
+                  <option key={rol} value={rol}>{rol}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">Cancelar</button>
+              <button className="px-5 py-2.5 rounded-xl font-bold text-white bg-[var(--brand)] hover:bg-[var(--brand-hover)] transition-colors shadow-sm">Enviar Invitación</button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </RoleGuard>
   );
