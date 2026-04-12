@@ -10,6 +10,7 @@ import { Beef, Filter, Activity, Plus, Loader2 } from 'lucide-react';
 import { SupabaseAnimalRepository } from '@/repositories/supabase/AnimalRepository';
 import { createClient } from '@/utils/supabase/client';
 import { AnimalWithRelations } from '@/types/domain/animal.schema';
+import { animalDisplayName } from '@/lib/animal-display';
 import AnimalFormModal from '@/components/animales/AnimalFormModal';
 
 export default function AnimalesPage() {
@@ -51,7 +52,7 @@ export default function AnimalesPage() {
       header: 'Identificación',
       render: (a) => (
         <div className="flex flex-col">
-          <span className="font-extrabold text-gray-900">{a.name || 'Sin nombre'}</span>
+          <span className="font-extrabold text-gray-900">{animalDisplayName(a)}</span>
           <span className="text-xs font-bold text-[var(--brand)] font-mono">{a.code}</span>
         </div>
       )
@@ -108,6 +109,8 @@ export default function AnimalesPage() {
         if (a.health_status === 'enfermo') variant = 'danger';
         if (a.health_status === 'en_tratamiento') variant = 'warning';
         if (a.health_status === 'cuarentena') variant = 'info';
+        if (a.health_status === 'cronico') variant = 'warning';
+        if (a.health_status === 'fallecido') variant = 'danger';
 
         return <Badge variant={variant} dot>{label}</Badge>;
       }
@@ -118,6 +121,7 @@ export default function AnimalesPage() {
       render: (a) => {
         if (a.vaccination_status === 'al_dia') return <Badge variant="success" dot>Al día</Badge>;
         if (a.vaccination_status === 'pendiente') return <Badge variant="warning" dot>Pendientes</Badge>;
+        if (a.vaccination_status === 'vencido') return <Badge variant="danger" dot>Vencido</Badge>;
         return <Badge variant="danger" dot>Atrasado</Badge>;
       }
     },
