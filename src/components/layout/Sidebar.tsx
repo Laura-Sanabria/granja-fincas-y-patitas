@@ -7,9 +7,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import {
   Tractor,
-  Settings,
-  ClipboardList,
-  Sprout,
   EggFried,
   X,
   Users,
@@ -24,7 +21,7 @@ import {
   Heart,
   BarChart3,
   LayoutDashboard,
-  Syringe,
+  Sprout,
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -34,25 +31,21 @@ interface NavItem {
   icon: LucideIcon;
 }
 
+interface SidebarProps {
+  role?: string;
+}
+
 const adminNavItems: NavItem[] = [
   { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Usuarios', href: '/dashboard/usuarios', icon: Users },
   { name: 'Animales', href: '/dashboard/animales', icon: Beef },
   { name: 'Insumos', href: '/dashboard/insumos', icon: PackageSearch },
-  { name: 'Vacunación', href: '/dashboard/vacunacion', icon: Syringe },
+  { name: 'Vacunación', href: '/dashboard/vacunacion', icon: PackageSearch },
   { name: 'Producción', href: '/dashboard/produccion', icon: EggFried },
   { name: 'Reproducción', href: '/dashboard/reproduccion', icon: Sprout },
   { name: 'Personal', href: '/dashboard/personal', icon: UserCheck },
   { name: 'Alertas', href: '/dashboard/alertas', icon: Bell },
   { name: 'Actividad', href: '/dashboard/actividad', icon: Activity },
-];
-
-/** Alineado con RoleGuard: insumos, vacunación y alertas (Fase 3.4), sin módulos solo admin */
-const encargadoNavItems: NavItem[] = [
-  { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Insumos', href: '/dashboard/insumos', icon: PackageSearch },
-  { name: 'Vacunación', href: '/dashboard/vacunacion', icon: Syringe },
-  { name: 'Alertas', href: '/dashboard/alertas', icon: Bell },
 ];
 
 const employeeNavItems: NavItem[] = [
@@ -65,28 +58,15 @@ const employeeNavItems: NavItem[] = [
   { name: 'Producción', href: '/dashboard/empleado/produccion', icon: BarChart3 },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ role: roleProp }: SidebarProps) {
   const pathname = usePathname();
-  const { role, loading } = useAuth();
+  const { role: roleFromContext } = useAuth();
   const { isSidebarOpen, closeSidebar } = useSidebar();
 
-  const roleUpper = role?.toUpperCase() ?? '';
+  // Usa el rol del servidor si está disponible, si no el del contexto
+  const role = roleProp || roleFromContext;
 
-  const navItems = loading
-    ? []
-    : roleUpper === 'ADMINISTRADOR'
-      ? adminNavItems
-      : roleUpper === 'ENCARGADO'
-        ? encargadoNavItems
-        : employeeNavItems;
-
-  const panelText = loading
-    ? 'Cargando...'
-    : roleUpper === 'ADMINISTRADOR'
-      ? 'Panel Admin'
-      : roleUpper === 'ENCARGADO'
-        ? 'Panel Encargado'
-        : 'Panel Empleado';
+  const navItems = role === 'ADMINISTRADOR' ? adminNavItems : employeeNavItems;
 
   return (
     <>
@@ -99,7 +79,7 @@ export default function Sidebar() {
             <div className="flex flex-col">
               <span className="font-bold text-base text-gray-800 tracking-tight leading-none">Fincas y Patitas</span>
               <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">
-                {panelText}
+                {role === 'ADMINISTRADOR' ? 'Panel Admin' : 'Panel Empleado'}
               </span>
             </div>
           </div>
@@ -121,11 +101,9 @@ export default function Sidebar() {
                 onClick={closeSidebar}
                 className={`group relative flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${isActive ? 'bg-white text-gray-900 shadow-sm border border-black/5' : 'text-gray-500 hover:text-gray-800 hover:bg-white/50'}`}
               >
-                {/* Active indicator bar */}
                 {isActive && (
                   <div className="absolute left-0 w-1.5 h-8 bg-[var(--brand)] rounded-r-full" />
                 )}
-
                 <item.icon className={`h-5 w-5 transition-colors ${isActive ? 'text-[var(--brand)]' : 'text-gray-400 group-hover:text-gray-600'}`} />
                 <span className="text-[11px] uppercase tracking-wider font-bold">{item.name}</span>
               </Link>
