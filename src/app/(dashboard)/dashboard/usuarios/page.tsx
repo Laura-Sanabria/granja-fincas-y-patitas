@@ -4,15 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile, Rol, RolEnum, ROL_OPTIONS } from '@/types/domain/user.schema';
 import { profileService } from '@/services/profileService';
 import { RoleGuard } from '@/components/RoleGuard';
-<<<<<<< HEAD
-import { Users, UserCog, AlertCircle, Loader2, Phone, MapPin } from 'lucide-react';
-=======
-import { Users, Loader2, UserCog, UserPlus } from 'lucide-react';
+import { Users, UserCog, AlertCircle, Loader2, Phone, MapPin, UserPlus } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Badge from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
->>>>>>> origin/develop
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<UserProfile[]>([]);
