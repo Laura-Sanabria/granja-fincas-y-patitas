@@ -164,6 +164,7 @@ export const VaccinationRecordSchema = z.object({
   unit: z.string(),
   applied_at: z.string(),
   next_dose_date: z.string().nullable().optional(),
+  responsible: z.string(),
   notes: z.string().nullable().optional(),
   registered_by: z.string().uuid().nullable().optional(),
   created_at: z.string().optional(),
@@ -181,6 +182,7 @@ export const CreateVaccinationInputSchema = z.object({
   unit: z.string().min(1, 'Indica la unidad'),
   applied_at: z.string().min(1, 'Indica la fecha de aplicación'),
   next_dose_date: z.string().nullable().optional(),
+  responsible: z.string().min(2, 'Indica el responsable de la aplicación'),
   notes: z.string().nullable().optional(),
 });
 

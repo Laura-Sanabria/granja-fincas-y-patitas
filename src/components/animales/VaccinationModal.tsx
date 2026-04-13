@@ -32,6 +32,7 @@ export default function VaccinationModal({ isOpen, animal, onClose, onSuccess }:
   const [unit, setUnit] = useState('');
   const [appliedAt, setAppliedAt] = useState(todayISO());
   const [nextDoseDate, setNextDoseDate] = useState('');
+  const [responsible, setResponsible] = useState('');
   const [notes, setNotes] = useState('');
 
   const [healthRepo] = useState(() => new SupabaseHealthRepository(createClient()));
@@ -97,6 +98,7 @@ export default function VaccinationModal({ isOpen, animal, onClose, onSuccess }:
     if (!qty || qty <= 0) return setError('Ingresa una cantidad válida mayor a 0.');
     if (!unit.trim()) return setError('Indica la unidad de medida.');
     if (!appliedAt) return setError('Indica la fecha de aplicación.');
+    if (!responsible.trim()) return setError('Indica el responsable de la aplicación.');
 
     setSaving(true);
     try {
@@ -109,6 +111,7 @@ export default function VaccinationModal({ isOpen, animal, onClose, onSuccess }:
         unit: unit.trim(),
         applied_at: new Date(appliedAt).toISOString(),
         next_dose_date: nextDoseDate || undefined,
+        responsible: responsible.trim(),
         notes: notes || undefined,
       });
       onSuccess();
@@ -128,6 +131,7 @@ export default function VaccinationModal({ isOpen, animal, onClose, onSuccess }:
     setUnit('');
     setAppliedAt(todayISO());
     setNextDoseDate('');
+    setResponsible('');
     setNotes('');
     setError(null);
     onClose();
@@ -297,6 +301,22 @@ export default function VaccinationModal({ isOpen, animal, onClose, onSuccess }:
                   className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-[var(--brand)]"
                 />
               </div>
+              </div>
+            </div>
+
+            {/* Responsable */}
+            <div>
+              <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">
+                Responsable de la Aplicación *
+              </label>
+              <input
+                type="text"
+                value={responsible}
+                onChange={(e) => setResponsible(e.target.value)}
+                placeholder="Nombre del veterinario o encargado..."
+                className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-[var(--brand)]"
+                required
+              />
             </div>
 
             {/* Notas */}
