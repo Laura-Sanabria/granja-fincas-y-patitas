@@ -118,3 +118,83 @@ export type AnimalTimelineFilter = {
   fromDate?: string;
   toDate?: string;
 };
+
+// ====================================================================
+// SISTEMA DE VACUNACIÓN (Fase 3, Punto 4)
+// ====================================================================
+
+/** Esquema/regla de vacunación por especie */
+export const VaccineSchemeSchema = z.object({
+  id: z.string().uuid(),
+  species_id: z.string().uuid().nullable().optional(),
+  vaccine_name: z.string(),
+  disease_target: z.string(),
+  apply_at_age_days: z.number().int().nullable().optional(),
+  revaccinate_every_days: z.number().int().nullable().optional(),
+  is_mandatory: z.boolean().default(true),
+  notes: z.string().nullable().optional(),
+  is_active: z.boolean().default(true),
+  created_by: z.string().uuid().nullable().optional(),
+  created_at: z.string().optional(),
+  updated_at: z.string().optional(),
+});
+
+export type VaccineScheme = z.infer<typeof VaccineSchemeSchema>;
+
+export const CreateVaccineSchemeInputSchema = z.object({
+  species_id: z.string().uuid().nullable().optional(),
+  vaccine_name: z.string().min(2, 'Ingresa el nombre de la vacuna'),
+  disease_target: z.string().min(2, 'Ingresa la enfermedad objetivo'),
+  apply_at_age_days: z.number().int().positive().nullable().optional(),
+  revaccinate_every_days: z.number().int().positive().nullable().optional(),
+  is_mandatory: z.boolean().default(true),
+  notes: z.string().nullable().optional(),
+});
+
+export type CreateVaccineSchemeInput = z.infer<typeof CreateVaccineSchemeInputSchema>;
+
+/** Registro histórico de una dosis aplicada a un animal */
+export const VaccinationRecordSchema = z.object({
+  id: z.string().uuid(),
+  animal_id: z.string().uuid(),
+  scheme_id: z.string().uuid().nullable().optional(),
+  supply_id: z.string().uuid().nullable().optional(),
+  vaccine_name: z.string(),
+  quantity_used: z.number().positive(),
+  unit: z.string(),
+  applied_at: z.string(),
+  next_dose_date: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  registered_by: z.string().uuid().nullable().optional(),
+  created_at: z.string().optional(),
+});
+
+export type VaccinationRecord = z.infer<typeof VaccinationRecordSchema>;
+
+/** Input para registrar una vacunación (individual o masiva) */
+export const CreateVaccinationInputSchema = z.object({
+  animal_id: z.string().uuid(),
+  scheme_id: z.string().uuid().nullable().optional(),
+  supply_id: z.string().uuid().nullable().optional(),
+  vaccine_name: z.string().min(2, 'Ingresa el nombre de la vacuna'),
+  quantity_used: z.number().positive('La cantidad debe ser mayor a 0'),
+  unit: z.string().min(1, 'Indica la unidad'),
+  applied_at: z.string().min(1, 'Indica la fecha de aplicación'),
+  next_dose_date: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export type CreateVaccinationInput = z.infer<typeof CreateVaccinationInputSchema>;
+
+/** Alerta de vacunación calculada (animales atrasados o próximos a vencer) */
+export interface VaccineAlert {
+  animal_id: string;
+  animal_code: string;
+  animal_name: string | null;
+  species_name: string;
+  vaccine_name: string;
+  next_dose_date: string;         // ISO date
+  days_overdue: number;           // positivo = atrasado, negativo = faltan X días
+  urgency: 'immediate' | 'soon' | 'ok';
+}
+

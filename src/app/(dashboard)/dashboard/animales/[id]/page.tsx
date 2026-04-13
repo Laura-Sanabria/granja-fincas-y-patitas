@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { RoleGuard } from '@/components/RoleGuard';
 import { 
   ArrowLeft, Activity, Scale, UserCheck, Heart, Calendar, 
-  Loader2, ClipboardList, Utensils, PlusCircle, History 
+  Loader2, ClipboardList, Utensils, PlusCircle, History, Syringe 
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import BarChart from '@/components/ui/BarChart';
@@ -19,6 +19,7 @@ import type { AnimalEvent, AnimalEventType, AnimalTimelineFilter } from '@/types
 import { FeedingRecord } from '@/types/domain/feeding.schema';
 import HealthEventModal from '@/components/animales/HealthEventModal';
 import FeedingModal from '@/components/animales/FeedingModal';
+import VaccinationModal from '@/components/animales/VaccinationModal';
 import AnimalTimeline from '@/components/animales/AnimalTimeline';
 
 type TabType = 'info' | 'health' | 'feeding';
@@ -65,6 +66,7 @@ export default function AnimalDetailPage() {
   
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
   const [isFeedingModalOpen, setIsFeedingModalOpen] = useState(false);
+  const [isVaccinationModalOpen, setIsVaccinationModalOpen] = useState(false);
 
   const [repo] = useState(() => new SupabaseAnimalRepository(createClient()));
   const [healthRepo] = useState(() => new SupabaseHealthRepository(createClient()));
@@ -170,13 +172,20 @@ export default function AnimalDetailPage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button 
               onClick={() => setIsFeedingModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-black/5 rounded-xl font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
             >
               <Utensils size={18} className="text-orange-500" />
               <span>Nueva Carga Alimenticia</span>
+            </button>
+            <button 
+              onClick={() => setIsVaccinationModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-black/5 rounded-xl font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+            >
+              <Syringe size={18} className="text-green-600" />
+              <span>Registrar Vacuna</span>
             </button>
             <button 
                onClick={() => setIsHealthModalOpen(true)}
@@ -372,6 +381,17 @@ export default function AnimalDetailPage() {
             if (activeTab === 'health') void fetchTimeline();
           }}
         />
+        {animal && (
+          <VaccinationModal
+            isOpen={isVaccinationModalOpen}
+            animal={animal}
+            onClose={() => setIsVaccinationModalOpen(false)}
+            onSuccess={() => {
+              void fetchAnimal();
+              if (activeTab === 'health') void fetchTimeline();
+            }}
+          />
+        )}
 
       </div>
     </RoleGuard>
