@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
-import { Species, Breed, CreateAnimalDTO, SexEnum } from '@/types/domain/animal.schema';
+import { Species, Breed, CreateAnimalDTO } from '@/types/domain/animal.schema';
 import { createClient } from '@/utils/supabase/client';
 import { SupabaseAnimalRepository } from '@/repositories/supabase/AnimalRepository';
 import { Loader2 } from 'lucide-react';
@@ -23,6 +23,7 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
 
   const [formData, setFormData] = useState<Partial<CreateAnimalDTO>>({
     sex: 'hembra',
+    origin: 'adquirido_externo',
     health_status: 'sano',
     vaccination_status: 'pendiente',
     reproductive_status: 'no_aplica',
@@ -36,6 +37,7 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
       // Reset form
       setFormData({
         sex: 'hembra',
+        origin: 'adquirido_externo',
         health_status: 'sano',
         vaccination_status: 'pendiente',
         reproductive_status: 'no_aplica',
@@ -88,6 +90,14 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
       if (!formData.species_id || !formData.sex) {
         throw new Error("Especie y Sexo son obligatorios");
       }
+      const origin = formData.origin ?? 'adquirido_externo';
+      if (origin === 'nacido_en_finca' && !formData.birth_date?.trim()) {
+        throw new Error('Indica la fecha de nacimiento para animales nacidos en la finca.');
+      }
+      const w = Number(formData.initial_weight_kg);
+      if (!Number.isFinite(w) || w < 0.1) {
+        throw new Error('El peso inicial es obligatorio (mínimo 0,1 kg).');
+      }
       
       const payload: CreateAnimalDTO = {
         species_id: formData.species_id,
@@ -96,9 +106,11 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
         name: formData.name,
         birth_date: formData.birth_date,
         acquisition_date: formData.acquisition_date,
-        initial_weight_kg: formData.initial_weight_kg ? Number(formData.initial_weight_kg) : undefined,
-        current_weight_kg: formData.current_weight_kg ? Number(formData.current_weight_kg) : undefined,
-        origin: formData.origin,
+        initial_weight_kg: w,
+        current_weight_kg: formData.current_weight_kg !== undefined && formData.current_weight_kg !== '' && String(formData.current_weight_kg).trim() !== ''
+          ? Number(formData.current_weight_kg)
+          : undefined,
+        origin,
         mother_id: formData.mother_id,
         father_id: formData.father_id,
         father_external: formData.father_external,
@@ -152,6 +164,23 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
 
             {/* Sexo y Nombre */}
             <div>
+              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Origen *</label>
+              <select
+                required
+                value={formData.origin ?? 'adquirido_externo'}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    origin: e.target.value as 'nacido_en_finca' | 'adquirido_externo',
+                  })
+                }
+                className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-[var(--brand)]"
+              >
+                <option value="adquirido_externo">Adquirido (compra / traslado)</option>
+                <option value="nacido_en_finca">Nacido en la finca</option>
+              </select>
+            </div>
+            <div>
               <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Sexo *</label>
               <select 
                 required
@@ -196,12 +225,12 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
 
             {/* Pesos */}
             <div>
-              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Peso Inicial (Kg)</label>
+              <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Peso inicial (kg) *</label>
               <input 
-                type="number" step="0.1"
-                value={formData.initial_weight_kg || ''}
-                onChange={e => setFormData({...formData, initial_weight_kg: Number(e.target.value)})}
-                placeholder="0.0"
+                type="number" step="0.1" min={0.1} required
+                value={formData.initial_weight_kg ?? ''}
+                onChange={e => setFormData({...formData, initial_weight_kg: e.target.value === '' ? undefined : Number(e.target.value)})}
+                placeholder="Ej. 45"
                 className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 outline-none focus:border-[var(--brand)]"
               />
             </div>

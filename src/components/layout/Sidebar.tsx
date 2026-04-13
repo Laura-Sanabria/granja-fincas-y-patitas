@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
-import { canAccess } from '@/lib/rbac';
 import {
   Tractor,
   Settings,
@@ -25,8 +24,8 @@ import {
   Heart,
   BarChart3,
   LayoutDashboard,
+  Syringe,
 } from 'lucide-react';
-import { Rol } from '@/types/domain/user.schema';
 import { LucideIcon } from 'lucide-react';
 
 interface NavItem {
@@ -40,11 +39,20 @@ const adminNavItems: NavItem[] = [
   { name: 'Usuarios', href: '/dashboard/usuarios', icon: Users },
   { name: 'Animales', href: '/dashboard/animales', icon: Beef },
   { name: 'Insumos', href: '/dashboard/insumos', icon: PackageSearch },
+  { name: 'Vacunación', href: '/dashboard/vacunacion', icon: Syringe },
   { name: 'Producción', href: '/dashboard/produccion', icon: EggFried },
   { name: 'Reproducción', href: '/dashboard/reproduccion', icon: Sprout },
   { name: 'Personal', href: '/dashboard/personal', icon: UserCheck },
   { name: 'Alertas', href: '/dashboard/alertas', icon: Bell },
   { name: 'Actividad', href: '/dashboard/actividad', icon: Activity },
+];
+
+/** Alineado con RoleGuard: insumos, vacunación y alertas (Fase 3.4), sin módulos solo admin */
+const encargadoNavItems: NavItem[] = [
+  { name: 'Inicio', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Insumos', href: '/dashboard/insumos', icon: PackageSearch },
+  { name: 'Vacunación', href: '/dashboard/vacunacion', icon: Syringe },
+  { name: 'Alertas', href: '/dashboard/alertas', icon: Bell },
 ];
 
 const employeeNavItems: NavItem[] = [
@@ -62,11 +70,23 @@ export default function Sidebar() {
   const { role, loading } = useAuth();
   const { isSidebarOpen, closeSidebar } = useSidebar();
 
-  // Seleccionar menú según rol
-  const navItems = role === 'ADMINISTRADOR' ? adminNavItems : employeeNavItems;
+  const roleUpper = role?.toUpperCase() ?? '';
 
-  // Mostrar los ítems siempre en el sidebar para el rol respectivo
-  const filteredNavItems = navItems;
+  const navItems = loading
+    ? []
+    : roleUpper === 'ADMINISTRADOR'
+      ? adminNavItems
+      : roleUpper === 'ENCARGADO'
+        ? encargadoNavItems
+        : employeeNavItems;
+
+  const panelText = loading
+    ? 'Cargando...'
+    : roleUpper === 'ADMINISTRADOR'
+      ? 'Panel Admin'
+      : roleUpper === 'ENCARGADO'
+        ? 'Panel Encargado'
+        : 'Panel Empleado';
 
   return (
     <>
@@ -79,7 +99,7 @@ export default function Sidebar() {
             <div className="flex flex-col">
               <span className="font-bold text-base text-gray-800 tracking-tight leading-none">Fincas y Patitas</span>
               <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mt-1">
-                {role === 'ADMINISTRADOR' ? 'Panel Admin' : 'Panel Empleado'}
+                {panelText}
               </span>
             </div>
           </div>
@@ -92,7 +112,7 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1">
-          {filteredNavItems.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
             return (
               <Link

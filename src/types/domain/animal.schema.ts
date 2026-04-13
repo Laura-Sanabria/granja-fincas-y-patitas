@@ -29,9 +29,27 @@ export type Breed = z.infer<typeof BreedSchema>;
 // --- Animales (Animals) ---
 export const AnimalStatusEnum = z.enum(['activo', 'descartado', 'vendido', 'muerto']);
 export const SexEnum = z.enum(['macho', 'hembra']);
-export const HealthStatusEnum = z.enum(['sano', 'enfermo', 'en_tratamiento', 'cuarentena']);
-export const ReproductiveStatusEnum = z.enum(['no_aplica', 'apto', 'gestante', 'lactante', 'descanso']);
-export const VaccinationStatusEnum = z.enum(['al_dia', 'pendiente']);
+/** UI + valores devueltos por Postgres (GRANJA_DB) */
+export const HealthStatusEnum = z.enum([
+  'sano',
+  'enfermo',
+  'en_tratamiento',
+  'cuarentena',
+  'cronico',
+  'fallecido',
+]);
+export const ReproductiveStatusEnum = z.enum([
+  'no_aplica',
+  'apto',
+  'gestante',
+  'lactante',
+  'descanso',
+  'sin_gestion_activa',
+  'en_gestion',
+  'en_parto',
+]);
+export const VaccinationStatusEnum = z.enum(['al_dia', 'pendiente', 'vencido']);
+export const AnimalOriginEnum = z.enum(['nacido_en_finca', 'adquirido_externo']);
 
 export const AnimalSchema = z.object({
   id: z.string().uuid(),
@@ -43,7 +61,7 @@ export const AnimalSchema = z.object({
   sex: SexEnum,
   birth_date: z.string().nullable().optional(),
   acquisition_date: z.string().nullable().optional(),
-  origin: z.string().nullable().optional(),
+  origin: AnimalOriginEnum.nullable().optional(),
   
   initial_weight_kg: z.number().nullable().optional(),
   current_weight_kg: z.number().nullable().optional(),

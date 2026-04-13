@@ -6,7 +6,12 @@ import { z } from 'zod';
  * ENCARGADO: Gestión operativa de la granja.
  * EMPLEADO: Registro de actividades básicas.
  */
-export const RolEnum = z.enum(['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO']);
+export const ROL_OPTIONS = ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'] as const;
+
+export const RolEnum = z.preprocess(
+  (val) => (typeof val === 'string' ? val.toUpperCase().trim() : val),
+  z.enum(ROL_OPTIONS)
+);
 export type Rol = z.infer<typeof RolEnum>;
 
 /**
