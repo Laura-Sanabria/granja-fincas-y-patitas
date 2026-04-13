@@ -301,7 +301,6 @@ export default function VaccinationModal({ isOpen, animal, onClose, onSuccess }:
                   className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:border-[var(--brand)]"
                 />
               </div>
-              </div>
             </div>
 
             {/* Responsable */}

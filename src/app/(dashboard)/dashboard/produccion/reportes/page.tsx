@@ -5,6 +5,7 @@ import { getProductionStats } from '@/actions/production-reports.actions';
 import MilkChart from '@/components/production/MilkChart';
 import EggChart from '@/components/production/EggChart';
 import SummaryCards from '@/components/production/SummaryCards';
+import ProductionTable from '@/components/production/ProductionTable';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +47,8 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
          <MilkChart data={stats.milkChart} />
          <EggChart data={stats.eggChart} />
       </div>
+
+      <ProductionTable milkChart={stats.milkChart} eggChart={stats.eggChart} />
     </div>
   );
 }
