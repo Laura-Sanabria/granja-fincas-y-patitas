@@ -27,10 +27,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login');
   }
 
-  // Obtener perfil para role y full_name usando el repositorio de dominio
   const profileRepo = new SupabaseProfileRepository();
   let profile = null;
-  
+
   try {
     profile = await profileRepo.getById(user.id, supabase);
   } catch (error) {
@@ -45,9 +44,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <SidebarProvider>
-      <DashboardShell 
-        header={<Header user={userData} />} 
-        sidebar={<Sidebar />}
+      <DashboardShell
+        header={<Header user={userData} />}
+        sidebar={<Sidebar role={userData.role} />}
       >
         <React.Suspense fallback={<DashboardLoading />}>
           {children}
