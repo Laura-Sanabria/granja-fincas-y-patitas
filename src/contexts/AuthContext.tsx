@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Session } from '@supabase/supabase-js';
 import { UserProfile, Rol } from '@/types/domain/user.schema';
 import { authService } from '@/services/auth/AuthService';
 import { useRouter } from 'next/navigation';
@@ -8,7 +9,7 @@ import { useRouter } from 'next/navigation';
 interface AuthContextType {
   user: UserProfile | null;
   role: Rol | null;
-  session: any | null;
+  session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -23,7 +24,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [session, setSession] = useState<any | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 

@@ -17,7 +17,7 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch (error) {
+          } catch {
             // Este error puede ser ignorado si el componente servidor sólo está leyendo,
             // ya que si intenta modificar cookies en un momento inválido arrojará error.
             // Para refresco seguro de sesión, suele delegarse al middleware.

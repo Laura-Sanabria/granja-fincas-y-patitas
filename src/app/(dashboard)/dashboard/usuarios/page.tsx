@@ -4,11 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile, Rol, RolEnum, ROL_OPTIONS } from '@/types/domain/user.schema';
 import { profileService } from '@/services/profileService';
 import { RoleGuard } from '@/components/RoleGuard';
+<<<<<<< HEAD
+import { Users, UserCog, AlertCircle, Loader2, Phone, MapPin } from 'lucide-react';
+=======
 import { Users, Loader2, UserCog, UserPlus } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Badge from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
+>>>>>>> origin/develop
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<UserProfile[]>([]);
@@ -24,8 +28,9 @@ export default function UsuariosPage() {
       setLoading(true);
       const data = await profileService.listarPerfiles();
       setUsuarios(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los usuarios');
+    } catch (err: unknown) {
+      const errorStr = err instanceof Error ? err.message : 'Error al cargar los usuarios';
+      setError(errorStr);
     } finally {
       setLoading(false);
     }
@@ -42,8 +47,9 @@ export default function UsuariosPage() {
       setUsuarios(prev => 
         prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
       );
-    } catch (err: any) {
-      alert(`Error al actualizar el rol: ${err.message}`);
+    } catch (err: unknown) {
+      const errorStr = err instanceof Error ? err.message : String(err);
+      alert(`Error al actualizar el rol: ${errorStr}`);
     } finally {
       setUpdatingId(null);
     }

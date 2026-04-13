@@ -1,7 +1,4 @@
-'use client';
-
 import React from 'react';
-<<<<<<< HEAD
 import { 
   Users, 
   AlertTriangle, 
@@ -9,29 +6,64 @@ import {
   TrendingUp, 
   Clock
 } from 'lucide-react';
-=======
-import { useAuth } from '@/contexts/AuthContext';
-import AdminDashboard from './AdminDashboard';
-import EmpleadoDashboard from './EmpleadoDashboard';
-import { Loader2 } from 'lucide-react';
->>>>>>> origin/develop
 
 export default function DashboardPage() {
-  const { role, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+  return (
+    <div className="flex flex-col gap-10 animate-fade-in">
+      {/* 1. Header Section & Weather */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div className="flex-1">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-none">Resumen de la Granja</h1>
+          <p className="mt-4 text-gray-500 font-medium max-w-2xl leading-relaxed">
+            Bienvenido a Fincas y Patitas. Todo está funcionando correctamente hoy. Tienes 3 revisiones médicas pendientes y la producción de leche subió un 5% desde ayer.
+          </p>
+        </div>
+        
+        <div className="bg-[#E4EFE4] p-6 rounded-[2rem] flex items-center gap-6 min-w-[280px] shadow-sm border border border-black/5">
+          <div className="h-14 w-14 rounded-2xl bg-white/50 flex items-center justify-center text-[var(--brand)] shadow-inner">
+            <Sun className="h-8 w-8" />
+          </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-widest font-extrabold text-gray-500 mb-1">Clima Actual</p>
+            <h3 className="text-2xl font-black text-gray-800 leading-none">24°C Soleado</h3>
+            <p className="text-xs font-bold text-[var(--brand)] mt-1 opacity-70">Ideal para el pastoreo</p>
+          </div>
+        </div>
       </div>
-    );
-  }
 
-  if (role === 'ADMINISTRADOR') {
-    return <AdminDashboard />;
-  }
+      {/* 2. Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Total Herd */}
+        <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-black/5 hover:shadow-md transition-all flex flex-col gap-6 group">
+          <div className="flex justify-between items-start">
+            <div className="h-14 w-14 rounded-2xl bg-[#E4EFE4]/60 flex items-center justify-center text-[var(--brand)] group-hover:scale-110 transition-transform">
+              <Users size={28} />
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-widest font-extrabold text-gray-400">Hato Total</p>
+              <div className="flex items-center gap-2 justify-end">
+                <h2 className="text-4xl font-black text-gray-900">1,248</h2>
+                <span className="text-xs font-bold text-[var(--brand)]">+12 esta semana</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-gray-50">
+            <div className="text-center">
+              <p className="text-sm font-black text-gray-800">450</p>
+              <p className="text-[10px] uppercase font-bold text-gray-400">Vacas</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-black text-gray-800">320</p>
+              <p className="text-[10px] uppercase font-bold text-gray-400">Cerdos</p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-black text-gray-800">478</p>
+              <p className="text-[10px] uppercase font-bold text-gray-400">Gallinas</p>
+            </div>
+          </div>
+        </div>
 
-<<<<<<< HEAD
         {/* Production Stats */}
         <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-black/5 hover:shadow-md transition-all flex flex-col gap-8 group">
           <div className="flex justify-between items-start">
@@ -190,7 +222,4 @@ export default function DashboardPage() {
       </footer>
     </div>
   );
-=======
-  return <EmpleadoDashboard />;
->>>>>>> origin/develop
 }

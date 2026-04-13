@@ -18,6 +18,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
   // Cerrar el sidebar automáticamente cuando cambie la ruta (navegación)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSidebarOpen(false);
   }, [pathname]);
 
