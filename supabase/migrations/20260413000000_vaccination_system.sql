@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS public.vaccination_records (
   unit            text NOT NULL,
   applied_at      timestamptz NOT NULL DEFAULT now(),
   next_dose_date  date,               -- calculado con revaccinate_every_days (editable)
+  responsible     text NOT NULL,      -- Quién aplicó la dosis
   notes           text,
   registered_by   uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
   created_at      timestamptz DEFAULT now() NOT NULL

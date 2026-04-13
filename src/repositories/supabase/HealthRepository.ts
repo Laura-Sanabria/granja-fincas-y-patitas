@@ -212,6 +212,7 @@ export class SupabaseHealthRepository implements IHealthRepository {
         unit: input.unit.trim(),
         applied_at: input.applied_at,
         next_dose_date: input.next_dose_date || null,
+        responsible: input.responsible.trim(),
         notes: input.notes?.trim() || null,
         registered_by: user.id,
       })
