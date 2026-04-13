@@ -200,4 +200,21 @@ export class SupabaseAnimalRepository implements IAnimalRepository {
     if (error) throw new Error(`Error al obtener razas: ${error.message}`);
     return data as Breed[];
   }
+
+  async getMalesBySpecies(speciesId: string): Promise<AnimalWithRelations[]> {
+    const { data, error } = await this.supabase
+      .from('animals')
+      .select(`
+        *,
+        species:species_id (*),
+        breed:breed_id (*)
+      `)
+      .eq('species_id', speciesId)
+      .eq('sex', 'macho')
+      .eq('status', 'activo')
+      .order('code');
+
+    if (error) throw new Error(`Error al obtener machos: ${error.message}`);
+    return data as AnimalWithRelations[];
+  }
 }

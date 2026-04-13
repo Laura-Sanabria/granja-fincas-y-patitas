@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { RoleGuard } from '@/components/RoleGuard';
 import { 
   ArrowLeft, Activity, Scale, UserCheck, Heart, Calendar, 
-  Loader2, ClipboardList, Utensils, PlusCircle, History, Syringe 
+  Loader2, ClipboardList, Utensils, PlusCircle, History, Syringe, Baby 
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import BarChart from '@/components/ui/BarChart';
@@ -20,9 +20,11 @@ import { FeedingRecord } from '@/types/domain/feeding.schema';
 import HealthEventModal from '@/components/animales/HealthEventModal';
 import FeedingModal from '@/components/animales/FeedingModal';
 import VaccinationModal from '@/components/animales/VaccinationModal';
+import ServiceModal from '@/components/animales/ServiceModal';
 import AnimalTimeline from '@/components/animales/AnimalTimeline';
+import ReproductiveTab from '@/components/animales/ReproductiveTab';
 
-type TabType = 'info' | 'health' | 'feeding';
+type TabType = 'info' | 'health' | 'feeding' | 'reproduction';
 
 type TimelineCategory = 'all' | 'salud' | 'vacunacion' | 'alimentacion' | 'otros';
 
@@ -67,6 +69,7 @@ export default function AnimalDetailPage() {
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
   const [isFeedingModalOpen, setIsFeedingModalOpen] = useState(false);
   const [isVaccinationModalOpen, setIsVaccinationModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const [repo] = useState(() => new SupabaseAnimalRepository(createClient()));
   const [healthRepo] = useState(() => new SupabaseHealthRepository(createClient()));
@@ -202,8 +205,9 @@ export default function AnimalDetailPage() {
           {[
             { id: 'info', label: 'Información General', icon: ClipboardList },
             { id: 'health', label: 'Historial integral', icon: Heart },
-            { id: 'feeding', label: 'Alimentación', icon: Utensils }
-          ].map(tab => (
+            { id: 'feeding', label: 'Alimentación', icon: Utensils },
+            { id: 'reproduction', label: 'Reproducción', icon: Baby, femaleOnly: true }
+          ].filter(tab => !tab.femaleOnly || (animal?.sex === 'hembra')).map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
@@ -362,6 +366,14 @@ export default function AnimalDetailPage() {
           </div>
         )}
 
+        {activeTab === 'reproduction' && animal && (
+          <ReproductiveTab 
+            animal={animal} 
+            onOpenService={() => setIsServiceModalOpen(true)}
+            onSuccess={fetchAnimal}
+          />
+        )}
+
         <HealthEventModal
           isOpen={isHealthModalOpen}
           animalId={id}
@@ -386,6 +398,18 @@ export default function AnimalDetailPage() {
             isOpen={isVaccinationModalOpen}
             animal={animal}
             onClose={() => setIsVaccinationModalOpen(false)}
+            onSuccess={() => {
+              void fetchAnimal();
+              if (activeTab === 'health') void fetchTimeline();
+            }}
+          />
+        )}
+
+        {animal && (
+          <ServiceModal
+            isOpen={isServiceModalOpen}
+            animal={animal}
+            onClose={() => setIsServiceModalOpen(false)}
             onSuccess={() => {
               void fetchAnimal();
               if (activeTab === 'health') void fetchTimeline();
