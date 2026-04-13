@@ -57,7 +57,10 @@ export async function logout() {
   return redirect('/login');
 }
 
+<<<<<<< HEAD
 // Funciones añadidas para soportar el flujo de recuperación de contraseña sin romper la app.
+=======
+>>>>>>> origin/develop
 export async function resetPassword(formData: FormData) {
   const email = formData.get('email') as string;
   const supabase = await createClient();
@@ -67,7 +70,11 @@ export async function resetPassword(formData: FormData) {
   if (error) {
     return redirect(`/forgot-password?message=${encodeURIComponent(error.message)}`);
   }
+<<<<<<< HEAD
   return redirect('/forgot-password?message=Revisa tu correo para el enlace de restablecimiento');
+=======
+  return redirect('/forgot-password?message=Revisa tu correo para restablecer la contraseña');
+>>>>>>> origin/develop
 }
 
 export async function updatePassword(formData: FormData) {
@@ -77,5 +84,9 @@ export async function updatePassword(formData: FormData) {
   if (error) {
     return redirect(`/update-password?message=${encodeURIComponent(error.message)}`);
   }
+<<<<<<< HEAD
   return redirect('/login?message=Contraseña actualizada exitosamente');
+=======
+  return redirect('/dashboard');
+>>>>>>> origin/develop
 }
