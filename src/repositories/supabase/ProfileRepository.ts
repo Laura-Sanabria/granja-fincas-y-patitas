@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ProfileSchema, type Profile } from '@/types/domain/profile.schema';
 import type { IProfileRepository } from '../IProfileRepository';
 
 export class SupabaseProfileRepository implements IProfileRepository {
-  private getClient(supabaseClient?: any) {
+  private getClient(supabaseClient?: SupabaseClient) {
     if (supabaseClient) return supabaseClient;
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,7 +11,7 @@ export class SupabaseProfileRepository implements IProfileRepository {
     );
   }
 
-  async getById(id: string, supabaseClient?: any): Promise<Profile | null> {
+  async getById(id: string, supabaseClient?: SupabaseClient): Promise<Profile | null> {
     const supabase = this.getClient(supabaseClient);
     
     const { data, error } = await supabase
@@ -25,7 +25,7 @@ export class SupabaseProfileRepository implements IProfileRepository {
     return ProfileSchema.parse(data);
   }
 
-  async getAll(supabaseClient?: any): Promise<Profile[]> {
+  async getAll(supabaseClient?: SupabaseClient): Promise<Profile[]> {
     const supabase = this.getClient(supabaseClient);
     const { data, error } = await supabase
       .from('profiles')
@@ -36,7 +36,7 @@ export class SupabaseProfileRepository implements IProfileRepository {
     return ProfileSchema.array().parse(data);
   }
 
-  async deactivate(id: string, supabaseClient?: any): Promise<void> {
+  async deactivate(id: string, supabaseClient?: SupabaseClient): Promise<void> {
     const supabase = this.getClient(supabaseClient);
     const { error } = await supabase
       .from('profiles')
@@ -45,7 +45,7 @@ export class SupabaseProfileRepository implements IProfileRepository {
     if (error) throw new Error(error.message);
   }
 
-  async updateRole(id: string, role: string, supabaseClient?: any): Promise<void> {
+  async updateRole(id: string, role: string, supabaseClient?: SupabaseClient): Promise<void> {
     const supabase = this.getClient(supabaseClient);
     const { error } = await supabase
       .from('profiles')

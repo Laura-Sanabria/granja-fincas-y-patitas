@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile, Rol, RolEnum } from '@/types/domain/user.schema';
 import { profileService } from '@/services/profileService';
 import { RoleGuard } from '@/components/RoleGuard';
-import { Users, UserCog, Check, AlertCircle, Loader2, Phone, MapPin } from 'lucide-react';
+import { Users, UserCog, AlertCircle, Loader2, Phone, MapPin } from 'lucide-react';
 
 export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState<UserProfile[]>([]);
@@ -19,8 +19,9 @@ export default function UsuariosPage() {
       setLoading(true);
       const data = await profileService.listarPerfiles();
       setUsuarios(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los usuarios');
+    } catch (err: unknown) {
+      const errorStr = err instanceof Error ? err.message : 'Error al cargar los usuarios';
+      setError(errorStr);
     } finally {
       setLoading(false);
     }
@@ -37,8 +38,9 @@ export default function UsuariosPage() {
       setUsuarios(prev => 
         prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
       );
-    } catch (err: any) {
-      alert(`Error al actualizar el rol: ${err.message}`);
+    } catch (err: unknown) {
+      const errorStr = err instanceof Error ? err.message : String(err);
+      alert(`Error al actualizar el rol: ${errorStr}`);
     } finally {
       setUpdatingId(null);
     }

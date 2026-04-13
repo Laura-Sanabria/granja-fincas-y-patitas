@@ -57,4 +57,25 @@ export async function logout() {
   return redirect('/login');
 }
 
-// ... resto de funciones (resetPassword, updatePassword) permanecen igual si no tocan perfiles directamente
+// Funciones añadidas para soportar el flujo de recuperación de contraseña sin romper la app.
+export async function resetPassword(formData: FormData) {
+  const email = formData.get('email') as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/update-password`,
+  });
+  if (error) {
+    return redirect(`/forgot-password?message=${encodeURIComponent(error.message)}`);
+  }
+  return redirect('/forgot-password?message=Revisa tu correo para el enlace de restablecimiento');
+}
+
+export async function updatePassword(formData: FormData) {
+  const password = formData.get('password') as string;
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return redirect(`/update-password?message=${encodeURIComponent(error.message)}`);
+  }
+  return redirect('/login?message=Contraseña actualizada exitosamente');
+}

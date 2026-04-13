@@ -1,6 +1,6 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { IAuthRepository } from '../IAuthRepository';
-import { UserProfile, UserSchema, LoginSchema, RegisterSchema } from '@/types/domain/user.schema';
+import { UserProfile, UserSchema, LoginSchema, RegisterSchema, LoginCredentials } from '@/types/domain/user.schema';
 
 export class SupabaseAuthRepository implements IAuthRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -31,10 +31,10 @@ export class SupabaseAuthRepository implements IAuthRepository {
     return UserSchema.parse(profile);
   }
 
-  async login(credentials: any): Promise<{ user: UserProfile; session: any }> {
+  async login(credentials: LoginCredentials): Promise<UserProfile> {
     const { email, password } = LoginSchema.parse(credentials);
     
-    const { data, error } = await this.supabase.auth.signInWithPassword({
+    const { error } = await this.supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -44,10 +44,10 @@ export class SupabaseAuthRepository implements IAuthRepository {
     const profile = await this.getCurrentUser();
     if (!profile) throw new Error('No se pudo recuperar el perfil del usuario');
 
-    return { user: profile, session: data.session };
+    return profile;
   }
 
-  async register(data: any): Promise<UserProfile> {
+  async register(data: Record<string, string>): Promise<UserProfile> {
     const { email, password, full_name } = RegisterSchema.parse(data);
 
     const { data: authData, error } = await this.supabase.auth.signUp({

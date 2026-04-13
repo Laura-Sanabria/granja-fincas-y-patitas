@@ -1,15 +1,10 @@
 import React from 'react';
 import { 
   Users, 
-  Tractor, 
-  ClipboardList, 
   AlertTriangle, 
   Sun, 
   TrendingUp, 
-  Clock, 
-  ChevronRight,
-  Milk,
-  Egg
+  Clock
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -176,7 +171,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="bg-[#FAF9F6] p-6 rounded-[2rem] border-l-4 border-[var(--brand)] italic text-gray-600 font-medium">
-            "¡Excelente rendimiento este fin de semana en Fincas y Patitas! La producción de leche superó el promedio mensual en un 12.4%."
+            &quot;¡Excelente rendimiento este fin de semana en Fincas y Patitas! La producción de leche superó el promedio mensual en un 12.4%.&quot;
           </div>
         </div>
 

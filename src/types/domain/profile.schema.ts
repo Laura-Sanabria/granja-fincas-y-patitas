@@ -13,6 +13,9 @@ export const ProfileSchema = z.object({
   phone: z.string().nullable().optional(),
   avatar_url: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
+  login_count: z.number().default(0),
+  failed_attempts: z.number().default(0),
+  create_by: z.string().uuid().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
 });
