@@ -26,7 +26,7 @@ export class SupabaseFeedingRepository implements IFeedingRepository {
       .order('fed_at', { ascending: false });
 
     if (error) throw new Error(`Error al obtener historial de alimentación: ${error.message}`);
-    return (data ?? []) as FeedingRecord[];
+    return (data ?? []) as unknown as FeedingRecord[];
   }
 
   /**

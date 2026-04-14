@@ -104,7 +104,7 @@ export default function AnimalesPage() {
       header: 'Salud',
       render: (a) => {
         let variant: 'success' | 'warning' | 'danger' | 'info' | 'neutral' = 'neutral';
-        let label = a.health_status.replace('_', ' ');
+        const label = a.health_status.replace('_', ' ');
         if (a.health_status === 'sano') variant = 'success';
         if (a.health_status === 'enfermo') variant = 'danger';
         if (a.health_status === 'en_tratamiento') variant = 'warning';

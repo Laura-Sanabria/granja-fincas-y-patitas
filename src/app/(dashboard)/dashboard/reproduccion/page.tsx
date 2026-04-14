@@ -42,11 +42,11 @@ export default function ReproduccionPage() {
 
   // Función para obtener la alerta más próxima de un evento
   const getNextAlert = (ev: ReproductiveEventWithRelations) => {
-    if (!ev.animal?.species?.gestation_days) return null;
+    if (!(ev.animal?.species as any)?.gestation_days) return null;
     const milestones = calculateReproMilestones(
       ev.event_date,
-      ev.animal.species.gestation_days,
-      ev.animal.species.is_productive_milk
+      (ev.animal?.species as any).gestation_days,
+      (ev.animal?.species as any).is_productive_milk
     );
     // Buscamos el primero que no esté completado/vencido o el más próximo activo
     return milestones.find(m => m.status === 'active' || m.status === 'overdue') || milestones[0];
@@ -179,7 +179,7 @@ export default function ReproduccionPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {events
-                .filter(e => e.event_type === 'servicio' && e.animal?.species?.gestation_days)
+                .filter(e => e.event_type === 'servicio' && (e.animal?.species as any)?.gestation_days)
                 .map(ev => {
                   const alert = getNextAlert(ev);
                   if (!alert) return null;

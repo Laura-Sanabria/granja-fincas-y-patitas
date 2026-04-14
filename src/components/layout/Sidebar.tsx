@@ -45,7 +45,7 @@ const adminNavItems: NavItem[] = [
   { name: 'Reproducción', href: '/dashboard/reproduccion', icon: Sprout },
   { name: 'Personal', href: '/dashboard/personal', icon: UserCheck },
   { name: 'Alertas', href: '/dashboard/alertas', icon: Bell },
-  { name: 'Actividad', href: '/dashboard/actividad', icon: Activity },
+  { name: 'Auditoría', href: '/dashboard/auditoria', icon: Activity },
 ];
 
 const employeeNavItems: NavItem[] = [

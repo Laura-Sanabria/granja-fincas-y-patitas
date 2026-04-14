@@ -1,4 +1,3 @@
-
 import React from 'react';
 import Link from 'next/link';
 import { Milk, EggFried, Activity, TrendingUp } from 'lucide-react';
@@ -51,20 +50,21 @@ export default function ProductionHubPage() {
         </Link>
         
         {/* Reportes Card */}
-        <div className="group rounded-3xl bg-gray-50 border border-gray-100 border-dashed p-6 flex flex-col gap-4 relative overflow-hidden">
-          <div className="relative h-full flex flex-col opacity-60 grayscale cursor-not-allowed">
-            <div className="w-14 h-14 bg-gray-300 rounded-2xl flex items-center justify-center text-gray-500 mb-6">
+        <Link href="/dashboard/produccion/reportes" className="group rounded-3xl bg-white border border-gray-100 p-6 flex flex-col gap-4 shadow-sm hover:shadow-xl hover:shadow-purple-500/10 hover:border-purple-200 transition-all duration-300 relative overflow-hidden">
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-purple-50 rounded-full blur-3xl group-hover:bg-purple-100 transition-colors" />
+          <div className="relative">
+            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-400 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-500/30 mb-6 group-hover:scale-110 transition-transform">
               <TrendingUp className="w-7 h-7" />
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Reportes <br/>Consolidados</h2>
             <p className="text-gray-500 text-sm font-medium leading-relaxed mb-6">
-              Gráficas y balances de la eficiencia productiva de la granja. Próximamente (Fase 6).
+              Gráficas y balances de la eficiencia productiva de la granja. Análisis de Fase 6.
             </p>
+            <div className="flex items-center text-purple-600 font-bold text-sm tracking-wide gap-2 group-hover:translate-x-1 transition-transform">
+              Ver Gráficas <Activity className="w-4 h-4" />
+            </div>
           </div>
-          <div className="absolute top-6 right-6 bg-gray-200 text-gray-500 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-            En Desarrollo
-          </div>
-        </div>
+        </Link>
       </div>
     </div>
   );

@@ -72,7 +72,8 @@ export default function ServiceModal({ isOpen, animal, onClose, onSuccess }: Pro
         father_external: fatherExternal.trim() || null,
         responsible: responsible.trim(),
         notes: notes.trim() || null,
-        result: 'pendiente'
+        result: 'pendiente',
+        offspring_count: 0
       });
       onSuccess();
       handleClose();

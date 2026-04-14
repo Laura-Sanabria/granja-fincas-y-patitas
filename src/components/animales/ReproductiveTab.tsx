@@ -136,7 +136,7 @@ export default function ReproductiveTab({ animal, onOpenService, onSuccess }: Pr
                         {ev.service_type === 'IA' ? 'Inseminación Artificial' : ev.service_type === 'monta_natural' ? 'Monta Natural' : ''}
                         {ev.father_id || ev.father_external ? ` · Padre: ${ev.father_external || 'Macho granja'}` : ''}
                       </p>
-                      {ev.notes && <p className="text-xs text-gray-400 mt-2 font-medium bg-gray-50 p-2 rounded-lg italic">"{ev.notes}"</p>}
+                      {ev.notes && <p className="text-xs text-gray-400 mt-2 font-medium bg-gray-50 p-2 rounded-lg italic">&quot;{ev.notes}&quot;</p>}
                     </div>
                  </div>
                  <div className="text-right">

@@ -89,7 +89,8 @@ export default function GlobalReproductionModal({ isOpen, onClose, onSuccess }: 
         father_external: fatherExternal.trim() || null,
         responsible: responsible.trim(),
         notes: notes.trim() || null,
-        result: 'pendiente'
+        result: 'pendiente',
+        offspring_count: 0
       });
       onSuccess();
       handleClose();

@@ -2,7 +2,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-export default function EggChart({ data }: { data: any[] }) {
+export default function EggChart({ data }: { data: Record<string, string | number>[] }) {
   return (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-6">
       <div>

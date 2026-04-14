@@ -59,7 +59,7 @@ export default function SupplyManager() {
             <span className={`font-bold ${isLow ? 'text-red-500' : 'text-gray-900'}`}>
               {item.current_stock} {item.unit}
             </span>
-            {isLow && <AlertTriangle size={16} className="text-red-500" title="Stock por debajo del mínimo" />}
+            {isLow && <div title="Stock por debajo del mínimo" className="inline-flex"><AlertTriangle size={16} className="text-red-500" /></div>}
           </div>
         );
       }
@@ -103,7 +103,7 @@ export default function SupplyManager() {
     const errors: Record<string, string> = {};
     
     if (!parsed.success) {
-      parsed.error.errors.forEach(err => {
+      parsed.error.issues.forEach((err: any) => {
         if (err.path[0]) {
           errors[err.path[0] as string] = err.message;
         }
