@@ -16,10 +16,12 @@ import { createClient } from '@/utils/supabase/client';
 import { AnimalWithRelations } from '@/types/domain/animal.schema';
 import { HealthEvent } from '@/types/domain/health.schema';
 import { FeedingRecord } from '@/types/domain/feeding.schema';
+import { ReproductiveEventWithRelations } from '@/types/domain/reproduction.schema';
+import { SupabaseReproductionRepository } from '@/repositories/supabase/ReproductionRepository';
 import HealthEventModal from '@/components/animales/HealthEventModal';
 import FeedingModal from '@/components/animales/FeedingModal';
 
-type TabType = 'info' | 'health' | 'feeding';
+type TabType = 'info' | 'health' | 'feeding' | 'repro';
 
 export default function AnimalDetailPage() {
   const params = useParams();
@@ -30,6 +32,7 @@ export default function AnimalDetailPage() {
   const [animal, setAnimal] = useState<AnimalWithRelations | null>(null);
   const [healthHistory, setHealthHistory] = useState<HealthEvent[]>([]);
   const [feedingHistory, setFeedingHistory] = useState<FeedingRecord[]>([]);
+  const [reproHistory, setReproHistory] = useState<ReproductiveEventWithRelations[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -40,6 +43,7 @@ export default function AnimalDetailPage() {
   const [repo] = useState(() => new SupabaseAnimalRepository(createClient()));
   const [healthRepo] = useState(() => new SupabaseHealthRepository(createClient()));
   const [feedingRepo] = useState(() => new SupabaseFeedingRepository(createClient()));
+  const [reproRepo] = useState(() => new SupabaseReproductionRepository(createClient()));
 
   const fetchAnimal = async () => {
     try {
@@ -77,6 +81,18 @@ export default function AnimalDetailPage() {
     }
   };
 
+  const fetchReproHistory = async () => {
+    try {
+      setLoadingHistory(true);
+      const data = await reproRepo.listByAnimal(id);
+      setReproHistory(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
   useEffect(() => {
     if (id) fetchAnimal();
   }, [id]);
@@ -84,6 +100,7 @@ export default function AnimalDetailPage() {
   useEffect(() => {
     if (activeTab === 'health') fetchHealthHistory();
     if (activeTab === 'feeding') fetchFeedingHistory();
+    if (activeTab === 'repro') fetchReproHistory();
   }, [activeTab, id]);
 
   if (loading) {
@@ -113,7 +130,7 @@ export default function AnimalDetailPage() {
               <ArrowLeft size={20} />
             </button>
             <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 leading-none">{animal.name || 'Sin Nombre'}</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900 leading-none">{animal.name || animal.species?.display_name || 'Animal'}</h1>
               <div className="flex items-center gap-3 mt-2">
                 <Badge variant="neutral">{animal.code}</Badge>
                 <span className="text-sm font-bold text-gray-400">•</span>
@@ -147,7 +164,8 @@ export default function AnimalDetailPage() {
           {[
             { id: 'info', label: 'Información General', icon: ClipboardList },
             { id: 'health', label: 'Historial de Salud', icon: Heart },
-            { id: 'feeding', label: 'Alimentación', icon: Utensils }
+            { id: 'feeding', label: 'Alimentación', icon: Utensils },
+            ...(animal?.sex === 'hembra' ? [{ id: 'repro', label: 'Reproducción', icon: History }] : [])
           ].map(tab => (
             <button
               key={tab.id}
@@ -279,6 +297,66 @@ export default function AnimalDetailPage() {
                   </table>
                 )}
              </div>
+          </div>
+        )}
+
+        {activeTab === 'repro' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2">
+            <div className="bg-white p-1 rounded-[2rem] shadow-sm border border-black/5 overflow-hidden">
+              <div className="p-6 border-b border-black/5 flex items-center justify-between">
+                <h3 className="text-xl font-black text-gray-900">Historial Reproductivo</h3>
+                <Badge variant={animal.reproductive_status === 'sin_gestion_activa' ? 'neutral' : 'warning'}>
+                  Estado: {animal.reproductive_status.replace('_', ' ')}
+                </Badge>
+              </div>
+              {loadingHistory ? (
+                <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-[var(--brand)]" /></div>
+              ) : reproHistory.length === 0 ? (
+                <div className="p-20 text-center text-gray-400 font-bold">No se han registrado eventos reproductivos para este animal.</div>
+              ) : (
+                <div className="divide-y divide-black/5">
+                  {reproHistory.map(ev => (
+                    <div key={ev.id} className="p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex gap-4">
+                        <div className="h-12 w-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                          <History size={20} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-gray-900 text-lg uppercase">
+                              {ev.event_type.replace('_', ' ')}
+                            </span>
+                            <Badge variant={
+                              ev.gestation_status === 'parto_exitoso' ? 'success' :
+                              ev.gestation_status === 'fallida' ? 'danger' : 'warning'
+                            }>
+                              {ev.gestation_status.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-600 font-medium">
+                            {ev.notes || 'Sin notas adicionales.'}
+                          </p>
+                          {ev.male_animal && (
+                            <p className="text-sm text-gray-400 mt-1">
+                              Macho: <b>{ev.male_animal.code} {ev.male_animal.name ? `(${ev.male_animal.name})` : ''}</b>
+                            </p>
+                          )}
+                          {ev.male_external && (
+                            <p className="text-sm text-gray-400 mt-1">
+                              Externo: <b>{ev.male_external}</b>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-gray-900">{ev.event_date.slice(0, 10)}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Fecha del evento</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

@@ -30,7 +30,7 @@ export type Breed = z.infer<typeof BreedSchema>;
 export const AnimalStatusEnum = z.enum(['activo', 'descartado', 'vendido', 'muerto']);
 export const SexEnum = z.enum(['macho', 'hembra']);
 export const HealthStatusEnum = z.enum(['sano', 'enfermo', 'en_tratamiento', 'cuarentena']);
-export const ReproductiveStatusEnum = z.enum(['no_aplica', 'apto', 'gestante', 'lactante', 'descanso']);
+export const ReproductiveStatusEnum = z.enum(['sin_gestion_activa', 'en_gestion', 'en_parto', 'no_aplica']);
 export const VaccinationStatusEnum = z.enum(['al_dia', 'pendiente']);
 
 export const AnimalSchema = z.object({

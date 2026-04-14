@@ -10,19 +10,19 @@ export const ROUTE_PERMISSIONS: Record<string, Rol[]> = {
   '/dashboard/animales': ['ADMINISTRADOR'],
   '/dashboard/insumos': ['ADMINISTRADOR'],
   '/dashboard/produccion': ['ADMINISTRADOR'],
-  '/dashboard/reproduccion': ['ADMINISTRADOR'],
+  '/dashboard/reproduccion': ['ADMINISTRADOR', 'ENCARGADO'],
   '/dashboard/personal': ['ADMINISTRADOR'],
   '/dashboard/alertas': ['ADMINISTRADOR'],
   '/dashboard/actividad': ['ADMINISTRADOR'],
   '/dashboard/configuracion': ['ADMINISTRADOR'],
 
   // ===== Rutas Empleado / Encargado =====
-  '/dashboard/empleado/tareas': ['EMPLEADO', 'ENCARGADO'],
-  '/dashboard/empleado/alimentacion': ['EMPLEADO', 'ENCARGADO'],
-  '/dashboard/empleado/turnos': ['EMPLEADO', 'ENCARGADO'],
-  '/dashboard/empleado/animales': ['EMPLEADO', 'ENCARGADO'],
-  '/dashboard/empleado/salud': ['EMPLEADO', 'ENCARGADO'],
-  '/dashboard/empleado/produccion': ['EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/tareas': ['ADMINISTRADOR', 'EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/alimentacion': ['ADMINISTRADOR', 'EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/turnos': ['ADMINISTRADOR', 'EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/animales': ['ADMINISTRADOR', 'EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/salud': ['ADMINISTRADOR', 'EMPLEADO', 'ENCARGADO'],
+  '/dashboard/empleado/produccion': ['ADMINISTRADOR', 'EMPLEADO', 'ENCARGADO'],
 
   // ===== Ruta base accesible para todos =====
   '/dashboard': ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'],
