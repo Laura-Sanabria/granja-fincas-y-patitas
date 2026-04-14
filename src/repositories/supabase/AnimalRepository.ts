@@ -7,6 +7,26 @@ import {
   Breed 
 } from '@/types/domain/animal.schema';
 import { SupabaseClient } from '@supabase/supabase-js';
+import {
+  toDbHealthStatus,
+  toDbReproductiveStatus,
+  toDbVaccinationStatus,
+  type DbAnimalOrigin,
+} from '@/lib/animals-db-map';
+
+function todayLocalISODate(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function normalizeWeightKg(value: unknown, fallback: number): number {
+  const v = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(v) || v < 0.1) return fallback;
+  return Math.round(v * 1000) / 1000;
+}
 
 export class SupabaseAnimalRepository implements IAnimalRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -48,42 +68,77 @@ export class SupabaseAnimalRepository implements IAnimalRepository {
   }
 
   async create(payload: CreateAnimalDTO): Promise<Animal> {
-    // 1. Obtener la especie para conocer su prefijo
-    const { data: species, error: speciesError } = await this.supabase
+    const {
+      data: { user },
+      error: authError,
+    } = await this.supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('Debes iniciar sesión para registrar un animal.');
+    }
+
+    const { data: speciesRow, error: speciesError } = await this.supabase
       .from('species')
-      .select('code_prefix')
+      .select('id')
       .eq('id', payload.species_id)
       .single();
 
-    if (speciesError || !species) {
+    if (speciesError || !speciesRow) {
       throw new Error('Especie no encontrada o error de base de datos.');
     }
 
-    // 2. Generar el código (Buscando el animal más reciente de esa especie para tener un correlativo)
-    // Una aproximación simple y segura usando una función SQL si se quiere evitar carrera de condiciones
-    // pero aquí lo hacemos consultando el mayor ID/Código que empiece con el prefijo
-    const { data: maxCodeAnimal } = await this.supabase
-      .from('animals')
-      .select('code')
-      .eq('species_id', payload.species_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    const origin: DbAnimalOrigin = payload.origin ?? 'adquirido_externo';
 
-    let newNumber = 1;
-    if (maxCodeAnimal && maxCodeAnimal.code) {
-      const parts = maxCodeAnimal.code.split('-');
-      if (parts.length === 2 && !isNaN(parseInt(parts[1]))) {
-        newNumber = parseInt(parts[1]) + 1;
-      }
+    const birthDate = payload.birth_date?.trim() || null;
+    let acquisitionDate = payload.acquisition_date?.trim() || null;
+    if (!birthDate && !acquisitionDate) {
+      acquisitionDate = todayLocalISODate();
+    }
+    if (origin === 'nacido_en_finca' && !birthDate) {
+      throw new Error(
+        'Para animales nacidos en la finca debes indicar la fecha de nacimiento.'
+      );
     }
 
-    const generatedCode = `${species.code_prefix}-${newNumber.toString().padStart(4, '0')}`;
+    const initialWeight = normalizeWeightKg(payload.initial_weight_kg, 0.1);
+    const currentRaw = payload.current_weight_kg;
+    const currentWeight =
+      currentRaw !== undefined && currentRaw !== null && String(currentRaw).trim() !== ''
+        ? normalizeWeightKg(currentRaw, initialWeight)
+        : initialWeight;
 
-    // 3. Insertar a la base de datos
-    const animalToInsert = {
-      ...payload,
-      code: generatedCode
+    const breedId =
+      payload.breed_id && String(payload.breed_id).trim() !== ''
+        ? payload.breed_id
+        : null;
+
+    const nameTrim = payload.name?.trim();
+    const notesTrim = payload.notes?.trim();
+    const noteLines: string[] = [];
+    if (nameTrim) noteLines.push(`Apodo: ${nameTrim}`);
+    if (notesTrim) noteLines.push(notesTrim);
+    const combinedNotes = noteLines.length ? noteLines.join('\n\n') : null;
+
+    const animalToInsert: Record<string, unknown> = {
+      species_id: payload.species_id,
+      breed_id: breedId,
+      sex: payload.sex,
+      birth_date: birthDate,
+      acquisition_date: acquisitionDate,
+      origin,
+      initial_weight_kg: initialWeight,
+      current_weight_kg: currentWeight,
+      status: 'activo',
+      health_status: toDbHealthStatus(payload.health_status),
+      reproductive_status: toDbReproductiveStatus(
+        payload.reproductive_status,
+        payload.sex
+      ),
+      vaccination_status: toDbVaccinationStatus(payload.vaccination_status),
+      mother_id: payload.mother_id ?? null,
+      father_id: payload.father_id ?? null,
+      father_external: payload.father_external?.trim() || null,
+      notes: combinedNotes,
+      registered_by: user.id,
     };
 
     const { data, error } = await this.supabase
@@ -144,5 +199,22 @@ export class SupabaseAnimalRepository implements IAnimalRepository {
 
     if (error) throw new Error(`Error al obtener razas: ${error.message}`);
     return data as Breed[];
+  }
+
+  async getMalesBySpecies(speciesId: string): Promise<AnimalWithRelations[]> {
+    const { data, error } = await this.supabase
+      .from('animals')
+      .select(`
+        *,
+        species:species_id (*),
+        breed:breed_id (*)
+      `)
+      .eq('species_id', speciesId)
+      .eq('sex', 'macho')
+      .eq('status', 'activo')
+      .order('code');
+
+    if (error) throw new Error(`Error al obtener machos: ${error.message}`);
+    return data as AnimalWithRelations[];
   }
 }

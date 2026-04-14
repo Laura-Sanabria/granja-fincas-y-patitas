@@ -8,21 +8,32 @@ import {
   Milk,
   Egg,
   Beef,
-  PackageSearch
+  PackageSearch,
+  Activity
 } from 'lucide-react';
 import StatCard from '@/components/ui/StatCard';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockAnimals, mockSupplies, mockProduction, mockAlerts } from '@/lib/mock-data';
+import { getGlobalKPIs, getAuditHistory } from '@/actions/dashboard.actions';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   
-  // Calcular KPIs basados en los datos mock
-  const totalAnimals = mockAnimals.length;
-  const criticalAlerts = mockAlerts.filter(a => a.level === 'critica').length;
-  const lowStockSupplies = mockSupplies.filter(s => s.current_stock <= s.min_stock).length;
-  
-  const latestProduction = mockProduction[mockProduction.length - 1] || { milk_liters: 0, egg_units: 0 };
+  const [kpis, setKpis] = React.useState({ totalAnimals: 0, criticalAlerts: 0, lowStockSupplies: 0, lastMonthMilk: 0 });
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      try {
+        const data = await getGlobalKPIs();
+        setKpis(data);
+      } catch (err) {
+        console.error(err);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
   return (
     <div className="flex flex-col gap-10 animate-fade-in">
@@ -33,16 +44,16 @@ export default function AdminDashboard() {
             Panel de Administración
           </h1>
           <p className="mt-4 text-gray-500 font-medium max-w-2xl leading-relaxed">
-            Bienvenido, {user?.full_name || 'Administrador'}. Tienes {criticalAlerts} alertas críticas y la producción del último mes fue de {latestProduction.milk_liters.toLocaleString()} L de leche.
+            Bienvenido, {user?.full_name || 'Administrador'}. Tienes {kpis.criticalAlerts} animales marcados como enfermos y la producción de leche suma {kpis.lastMonthMilk.toLocaleString()} L en los últimos 30 días.
           </p>
         </div>
       </div>
 
       {/* 2. Grid de KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity duration-500 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
         <StatCard 
           title="Total Animales"
-          value={totalAnimals.toLocaleString()}
+          value={kpis.totalAnimals.toLocaleString()}
           icon={Beef}
           color="brand"
           href="/dashboard/animales"
@@ -50,16 +61,16 @@ export default function AdminDashboard() {
         
         <StatCard 
           title="Insumos Bajos"
-          value={lowStockSupplies}
+          value={kpis.lowStockSupplies}
           icon={PackageSearch}
           color="orange"
           href="/dashboard/insumos"
         />
         
         <StatCard 
-          title="Alertas Activas"
-          value={mockAlerts.length}
-          subtitle={`${criticalAlerts} críticas`}
+          title="Alertas Salud"
+          value={kpis.criticalAlerts}
+          subtitle="Animales enfermos"
           icon={AlertTriangle}
           color="red"
           href="/dashboard/alertas"
@@ -67,10 +78,10 @@ export default function AdminDashboard() {
         
         <StatCard 
           title="Producción de Leche"
-          value={`${latestProduction.milk_liters.toLocaleString()} L`}
+          value={`${kpis.lastMonthMilk.toLocaleString()} L`}
+          subtitle="Últimos 30 días"
           icon={Milk}
           color="blue"
-          trend={{ value: '5%', positive: true }}
           href="/dashboard/produccion"
         />
       </div>
@@ -101,6 +112,30 @@ export default function AdminDashboard() {
             </div>
             <h4 className="text-lg font-bold text-gray-900">Métricas de Producción</h4>
             <p className="text-sm text-gray-500 mt-2">Visualiza el rendimiento de producción de leche y huevos con gráficos mensuales.</p>
+          </a>
+        </div>
+      </div>
+
+      {/* 4. Auditoría */}
+      <div className="mt-4 border-t border-gray-100 pt-10">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-2xl font-black text-gray-900">Seguridad Integral</h3>
+        </div>
+        <div className="grid grid-cols-1 gap-6">
+          <a href="/dashboard/auditoria" className="bg-gray-900 p-8 rounded-[2rem] shadow-xl hover:shadow-2xl transition-all group overflow-hidden relative border border-gray-800">
+            <div className="absolute right-0 top-0 bottom-0 w-64 bg-gradient-to-l from-emerald-500/10 to-transparent pointer-events-none" />
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <div className="h-14 w-14 rounded-2xl bg-gray-800 flex items-center justify-center text-emerald-400 mb-6 group-hover:scale-110 transition-transform shadow-lg">
+                  <Activity size={28} />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-2">Panel de Auditoría</h4>
+                <p className="text-gray-400 text-sm max-w-sm">Monitoreo transaccional de Base de Datos (Insert/Update/Delete). Comprueba quién hizo qué cambio y en qué fecha.</p>
+              </div>
+              <div className="hidden md:flex items-center text-emerald-400 font-bold tracking-wide gap-3 group-hover:translate-x-2 transition-transform">
+                Visualizar Logs Transversales <TrendingUp className="w-5 h-5" />
+              </div>
+            </div>
           </a>
         </div>
       </div>

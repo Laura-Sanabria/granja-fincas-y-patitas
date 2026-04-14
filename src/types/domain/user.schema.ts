@@ -6,7 +6,12 @@ import { z } from 'zod';
  * ENCARGADO: Gestión operativa de la granja.
  * EMPLEADO: Registro de actividades básicas.
  */
-export const RolEnum = z.enum(['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO']);
+export const ROL_OPTIONS = ['ADMINISTRADOR', 'ENCARGADO', 'EMPLEADO'] as const;
+
+export const RolEnum = z.preprocess(
+  (val) => (typeof val === 'string' ? val.toUpperCase().trim() : val),
+  z.enum(ROL_OPTIONS)
+);
 export type Rol = z.infer<typeof RolEnum>;
 
 /**
@@ -40,9 +45,11 @@ export const LoginSchema = z.object({
   email: z.string().email('Correo electrónico no válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
+export type LoginCredentials = z.infer<typeof LoginSchema>;
 
 export const RegisterSchema = z.object({
   full_name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
   email: z.string().email('Correo electrónico no válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
+export type RegisterUser = z.infer<typeof RegisterSchema>;

@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { UserProfile, Rol, RolEnum } from '@/types/domain/user.schema';
+import { UserProfile, Rol, RolEnum, ROL_OPTIONS } from '@/types/domain/user.schema';
 import { profileService } from '@/services/profileService';
 import { RoleGuard } from '@/components/RoleGuard';
-import { Users, Loader2, UserCog, UserPlus } from 'lucide-react';
+import { Users, UserCog, AlertCircle, Loader2, Phone, MapPin, UserPlus } from 'lucide-react';
 import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { Column } from '@/components/ui/DataTable';
 import Badge from '@/components/ui/Badge';
@@ -24,8 +24,9 @@ export default function UsuariosPage() {
       setLoading(true);
       const data = await profileService.listarPerfiles();
       setUsuarios(data);
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar los usuarios');
+    } catch (err: unknown) {
+      const errorStr = err instanceof Error ? err.message : 'Error al cargar los usuarios';
+      setError(errorStr);
     } finally {
       setLoading(false);
     }
@@ -42,8 +43,9 @@ export default function UsuariosPage() {
       setUsuarios(prev => 
         prev.map(u => u.id === userId ? { ...u, role: newRole } : u)
       );
-    } catch (err: any) {
-      alert(`Error al actualizar el rol: ${err.message}`);
+    } catch (err: unknown) {
+      const errorStr = err instanceof Error ? err.message : String(err);
+      alert(`Error al actualizar el rol: ${errorStr}`);
     } finally {
       setUpdatingId(null);
     }
@@ -122,7 +124,7 @@ export default function UsuariosPage() {
                 onChange={(e) => handleRoleChange(u.id, e.target.value as Rol)}
                 className="bg-gray-50 border border-black/5 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-600 focus:ring-2 focus:ring-[var(--brand)] outline-none cursor-pointer"
               >
-                {RolEnum.options.map(rol => (
+                {ROL_OPTIONS.map(rol => (
                   <option key={rol} value={rol}>{rol}</option>
                 ))}
               </select>
@@ -190,7 +192,7 @@ export default function UsuariosPage() {
              <div>
               <label className="block text-xs font-extrabold text-gray-500 uppercase tracking-widest mb-1">Rol Inicial</label>
               <select className="w-full bg-gray-50 border border-black/5 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 focus:ring-2 focus:ring-[var(--brand)] outline-none uppercase">
-                {RolEnum.options.map(rol => (
+                {ROL_OPTIONS.map(rol => (
                   <option key={rol} value={rol}>{rol}</option>
                 ))}
               </select>

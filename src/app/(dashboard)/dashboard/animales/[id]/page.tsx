@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { RoleGuard } from '@/components/RoleGuard';
 import { 
   ArrowLeft, Activity, Scale, UserCheck, Heart, Calendar, 
-  Loader2, ClipboardList, Utensils, PlusCircle, History 
+  Loader2, ClipboardList, Utensils, PlusCircle, History, Syringe, Baby 
 } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import BarChart from '@/components/ui/BarChart';
@@ -14,14 +14,45 @@ import { SupabaseHealthRepository } from '@/repositories/supabase/HealthReposito
 import { SupabaseFeedingRepository } from '@/repositories/supabase/FeedingRepository';
 import { createClient } from '@/utils/supabase/client';
 import { AnimalWithRelations } from '@/types/domain/animal.schema';
-import { HealthEvent } from '@/types/domain/health.schema';
+import { animalDisplayName } from '@/lib/animal-display';
+import type { AnimalEvent, AnimalEventType, AnimalTimelineFilter } from '@/types/domain/health.schema';
 import { FeedingRecord } from '@/types/domain/feeding.schema';
 import { ReproductiveEventWithRelations } from '@/types/domain/reproduction.schema';
 import { SupabaseReproductionRepository } from '@/repositories/supabase/ReproductionRepository';
 import HealthEventModal from '@/components/animales/HealthEventModal';
 import FeedingModal from '@/components/animales/FeedingModal';
+import VaccinationModal from '@/components/animales/VaccinationModal';
+import ServiceModal from '@/components/animales/ServiceModal';
+import AnimalTimeline from '@/components/animales/AnimalTimeline';
+import ReproductiveTab from '@/components/animales/ReproductiveTab';
 
+<<<<<<< HEAD
 type TabType = 'info' | 'health' | 'feeding' | 'repro';
+=======
+type TabType = 'info' | 'health' | 'feeding' | 'reproduction';
+
+type TimelineCategory = 'all' | 'salud' | 'vacunacion' | 'alimentacion' | 'otros';
+
+const OTHER_EVENT_TYPES: AnimalEventType[] = [
+  'ingreso',
+  'actualizacion',
+  'reproductivo',
+  'parto',
+  'produccion',
+  'egreso',
+  'correccion',
+];
+
+function categoryToServerFilter(
+  cat: TimelineCategory
+): AnimalTimelineFilter | undefined {
+  if (cat === 'all') return undefined;
+  if (cat === 'salud') return { eventTypes: ['salud'] };
+  if (cat === 'vacunacion') return { eventTypes: ['vacunacion'] };
+  if (cat === 'alimentacion') return { eventTypes: ['alimentacion'] };
+  return { eventTypes: OTHER_EVENT_TYPES };
+}
+>>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
 
 export default function AnimalDetailPage() {
   const params = useParams();
@@ -30,15 +61,26 @@ export default function AnimalDetailPage() {
 
   const [activeTab, setActiveTab] = useState<TabType>('info');
   const [animal, setAnimal] = useState<AnimalWithRelations | null>(null);
-  const [healthHistory, setHealthHistory] = useState<HealthEvent[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<AnimalEvent[]>([]);
   const [feedingHistory, setFeedingHistory] = useState<FeedingRecord[]>([]);
+<<<<<<< HEAD
   const [reproHistory, setReproHistory] = useState<ReproductiveEventWithRelations[]>([]);
   
+=======
+
+>>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
   const [loading, setLoading] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const [timelineCategory, setTimelineCategory] = useState<TimelineCategory>('all');
+  const [timelineFrom, setTimelineFrom] = useState('');
+  const [timelineTo, setTimelineTo] = useState('');
+  const [timelineSearch, setTimelineSearch] = useState('');
   
   const [isHealthModalOpen, setIsHealthModalOpen] = useState(false);
   const [isFeedingModalOpen, setIsFeedingModalOpen] = useState(false);
+  const [isVaccinationModalOpen, setIsVaccinationModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
 
   const [repo] = useState(() => new SupabaseAnimalRepository(createClient()));
   const [healthRepo] = useState(() => new SupabaseHealthRepository(createClient()));
@@ -57,19 +99,36 @@ export default function AnimalDetailPage() {
     }
   };
 
-  const fetchHealthHistory = async () => {
+  const fetchTimeline = useCallback(async () => {
+    if (!id) return;
     try {
       setLoadingHistory(true);
-      const data = await healthRepo.getByAnimal(id);
-      setHealthHistory(data);
+      const base = categoryToServerFilter(timelineCategory);
+      const filter: AnimalTimelineFilter = {
+        ...base,
+        fromDate: timelineFrom.trim() || undefined,
+        toDate: timelineTo.trim() || undefined,
+      };
+      const data = await healthRepo.getTimelineByAnimal(id, filter);
+      setTimelineEvents(data);
     } catch (e) {
       console.error(e);
     } finally {
       setLoadingHistory(false);
     }
-  };
+  }, [id, healthRepo, timelineCategory, timelineFrom, timelineTo]);
 
-  const fetchFeedingHistory = async () => {
+  const filteredTimeline = useMemo(() => {
+    const q = timelineSearch.trim().toLowerCase();
+    if (!q) return timelineEvents;
+    return timelineEvents.filter((ev) => {
+      const blob = `${ev.title} ${ev.description ?? ''} ${JSON.stringify(ev.metadata ?? {})}`.toLowerCase();
+      return blob.includes(q);
+    });
+  }, [timelineEvents, timelineSearch]);
+
+  const fetchFeedingHistory = useCallback(async () => {
+    if (!id) return;
     try {
       setLoadingHistory(true);
       const data = await feedingRepo.getByAnimal(id);
@@ -79,7 +138,7 @@ export default function AnimalDetailPage() {
     } finally {
       setLoadingHistory(false);
     }
-  };
+  }, [id, feedingRepo]);
 
   const fetchReproHistory = async () => {
     try {
@@ -98,10 +157,16 @@ export default function AnimalDetailPage() {
   }, [id]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (activeTab === 'health') fetchHealthHistory();
     if (activeTab === 'feeding') fetchFeedingHistory();
     if (activeTab === 'repro') fetchReproHistory();
   }, [activeTab, id]);
+=======
+    if (activeTab === 'health') void fetchTimeline();
+    if (activeTab === 'feeding') void fetchFeedingHistory();
+  }, [activeTab, id, fetchTimeline, fetchFeedingHistory]);
+>>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
 
   if (loading) {
     return (
@@ -130,7 +195,11 @@ export default function AnimalDetailPage() {
               <ArrowLeft size={20} />
             </button>
             <div>
+<<<<<<< HEAD
               <h1 className="text-3xl font-extrabold text-gray-900 leading-none">{animal.name || animal.species?.display_name || 'Animal'}</h1>
+=======
+              <h1 className="text-3xl font-extrabold text-gray-900 leading-none">{animalDisplayName(animal)}</h1>
+>>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
               <div className="flex items-center gap-3 mt-2">
                 <Badge variant="neutral">{animal.code}</Badge>
                 <span className="text-sm font-bold text-gray-400">•</span>
@@ -141,13 +210,20 @@ export default function AnimalDetailPage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button 
               onClick={() => setIsFeedingModalOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-black/5 rounded-xl font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
             >
               <Utensils size={18} className="text-orange-500" />
               <span>Nueva Carga Alimenticia</span>
+            </button>
+            <button 
+              onClick={() => setIsVaccinationModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-black/5 rounded-xl font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+            >
+              <Syringe size={18} className="text-green-600" />
+              <span>Registrar Vacuna</span>
             </button>
             <button 
                onClick={() => setIsHealthModalOpen(true)}
@@ -163,10 +239,17 @@ export default function AnimalDetailPage() {
         <div className="flex border-b border-black/5 gap-8 overflow-x-auto scrollbar-hide">
           {[
             { id: 'info', label: 'Información General', icon: ClipboardList },
+<<<<<<< HEAD
             { id: 'health', label: 'Historial de Salud', icon: Heart },
             { id: 'feeding', label: 'Alimentación', icon: Utensils },
             ...(animal?.sex === 'hembra' ? [{ id: 'repro', label: 'Reproducción', icon: History }] : [])
           ].map(tab => (
+=======
+            { id: 'health', label: 'Historial integral', icon: Heart },
+            { id: 'feeding', label: 'Alimentación', icon: Utensils },
+            { id: 'reproduction', label: 'Reproducción', icon: Baby, femaleOnly: true }
+          ].filter(tab => !tab.femaleOnly || (animal?.sex === 'hembra')).map(tab => (
+>>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
@@ -218,42 +301,67 @@ export default function AnimalDetailPage() {
         )}
 
         {activeTab === 'health' && (
-          <div className="animate-in fade-in slide-in-from-bottom-2">
-            <div className="bg-white p-1 rounded-[2rem] shadow-sm border border-black/5 overflow-hidden">
-              <div className="p-6 border-b border-black/5">
-                <h3 className="text-xl font-black text-gray-900">Historial Clínico y Eventos</h3>
-              </div>
-              {loadingHistory ? (
-                <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-[var(--brand)]" /></div>
-              ) : healthHistory.length === 0 ? (
-                <div className="p-20 text-center text-gray-400 font-bold">No se han registrado eventos de salud.</div>
-              ) : (
-                <div className="divide-y divide-black/5">
-                  {healthHistory.map(event => (
-                    <div key={event.id} className="p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex gap-4">
-                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
-                          event.event_type === 'enfermedad' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'
-                        }`}>
-                          <Heart size={20} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold text-gray-900 text-lg uppercase tracking-tight">{event.event_type}</span>
-                            <Badge variant={event.recovery_status === 'recuperado' ? 'success' : 'warning'}>{event.recovery_status}</Badge>
-                          </div>
-                          <p className="text-gray-600 font-medium">{event.description}</p>
-                          {event.diagnosis && <p className="text-sm text-gray-400 mt-1"><b>Diag:</b> {event.diagnosis}</p>}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-gray-900">{event.detected_at}</p>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Fecha de registro</p>
-                      </div>
-                    </div>
-                  ))}
+          <div className="animate-in fade-in slide-in-from-bottom-2 space-y-4">
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-black/5">
+              <h3 className="text-xl font-black text-gray-900 mb-1">Historial clínico unificado</h3>
+              <p className="text-sm font-medium text-gray-500 mb-6">
+                Salud, vacunación, alimentación y otros eventos (RF012). Filtra por tipo y fechas (RF013).
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">
+                    Tipo de evento
+                  </label>
+                  <select
+                    value={timelineCategory}
+                    onChange={(e) => setTimelineCategory(e.target.value as TimelineCategory)}
+                    className="w-full bg-gray-50 border border-black/5 rounded-xl px-3 py-2.5 text-sm font-bold text-gray-700 outline-none focus:border-[var(--brand)]"
+                  >
+                    <option value="all">Todos</option>
+                    <option value="salud">Salud</option>
+                    <option value="vacunacion">Vacunación</option>
+                    <option value="alimentacion">Alimentación</option>
+                    <option value="otros">Otros (ingreso, reproducción…)</option>
+                  </select>
                 </div>
-              )}
+                <div>
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">
+                    Desde
+                  </label>
+                  <input
+                    type="date"
+                    value={timelineFrom}
+                    onChange={(e) => setTimelineFrom(e.target.value)}
+                    className="w-full bg-gray-50 border border-black/5 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 outline-none focus:border-[var(--brand)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">
+                    Hasta
+                  </label>
+                  <input
+                    type="date"
+                    value={timelineTo}
+                    onChange={(e) => setTimelineTo(e.target.value)}
+                    className="w-full bg-gray-50 border border-black/5 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 outline-none focus:border-[var(--brand)]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1">
+                    Buscar en texto
+                  </label>
+                  <input
+                    type="search"
+                    value={timelineSearch}
+                    onChange={(e) => setTimelineSearch(e.target.value)}
+                    placeholder="Título, descripción, diagnóstico…"
+                    className="w-full bg-gray-50 border border-black/5 rounded-xl px-3 py-2.5 text-sm font-medium text-gray-700 outline-none focus:border-[var(--brand)]"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="bg-white p-1 rounded-[2rem] shadow-sm border border-black/5 overflow-hidden">
+              <AnimalTimeline events={filteredTimeline} loading={loadingHistory} />
             </div>
           </div>
         )}
@@ -283,7 +391,7 @@ export default function AnimalDetailPage() {
                     <tbody className="divide-y divide-black/5">
                       {feedingHistory.map(rec => (
                         <tr key={rec.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-5 font-bold text-gray-900">{(rec as any).supply?.name || 'Insumo'}</td>
+                          <td className="px-6 py-5 font-bold text-gray-900">{rec.supply?.name ?? 'Insumo'}</td>
                           <td className="px-6 py-5">
                             <span className="font-black text-[var(--brand)]">{rec.quantity}</span>
                             <span className="text-xs font-bold text-gray-400 uppercase ml-1">{rec.unit}</span>
@@ -300,6 +408,7 @@ export default function AnimalDetailPage() {
           </div>
         )}
 
+<<<<<<< HEAD
         {activeTab === 'repro' && (
           <div className="animate-in fade-in slide-in-from-bottom-2">
             <div className="bg-white p-1 rounded-[2rem] shadow-sm border border-black/5 overflow-hidden">
@@ -364,12 +473,58 @@ export default function AnimalDetailPage() {
           isOpen={isHealthModalOpen} animalId={id} 
           onClose={() => setIsHealthModalOpen(false)} 
           onSuccess={() => { fetchAnimal(); if(activeTab === 'health') fetchHealthHistory(); }} 
+=======
+        {activeTab === 'reproduction' && animal && (
+          <ReproductiveTab 
+            animal={animal} 
+            onOpenService={() => setIsServiceModalOpen(true)}
+            onSuccess={fetchAnimal}
+          />
+        )}
+
+        <HealthEventModal
+          isOpen={isHealthModalOpen}
+          animalId={id}
+          onClose={() => setIsHealthModalOpen(false)}
+          onSuccess={() => {
+            void fetchAnimal();
+            if (activeTab === 'health') void fetchTimeline();
+          }}
+>>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
         />
-        <FeedingModal 
-          isOpen={isFeedingModalOpen} animalId={id} 
-          onClose={() => setIsFeedingModalOpen(false)} 
-          onSuccess={() => { fetchAnimal(); if(activeTab === 'feeding') fetchFeedingHistory(); }}
+        <FeedingModal
+          isOpen={isFeedingModalOpen}
+          animalId={id}
+          onClose={() => setIsFeedingModalOpen(false)}
+          onSuccess={() => {
+            void fetchAnimal();
+            if (activeTab === 'feeding') void fetchFeedingHistory();
+            if (activeTab === 'health') void fetchTimeline();
+          }}
         />
+        {animal && (
+          <VaccinationModal
+            isOpen={isVaccinationModalOpen}
+            animal={animal}
+            onClose={() => setIsVaccinationModalOpen(false)}
+            onSuccess={() => {
+              void fetchAnimal();
+              if (activeTab === 'health') void fetchTimeline();
+            }}
+          />
+        )}
+
+        {animal && (
+          <ServiceModal
+            isOpen={isServiceModalOpen}
+            animal={animal}
+            onClose={() => setIsServiceModalOpen(false)}
+            onSuccess={() => {
+              void fetchAnimal();
+              if (activeTab === 'health') void fetchTimeline();
+            }}
+          />
+        )}
 
       </div>
     </RoleGuard>

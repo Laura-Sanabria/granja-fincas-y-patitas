@@ -8,11 +8,12 @@ export const ROUTE_PERMISSIONS: Record<string, Rol[]> = {
   // ===== Rutas Admin =====
   '/dashboard/usuarios': ['ADMINISTRADOR'],
   '/dashboard/animales': ['ADMINISTRADOR'],
-  '/dashboard/insumos': ['ADMINISTRADOR'],
+  '/dashboard/insumos': ['ADMINISTRADOR', 'ENCARGADO'],
   '/dashboard/produccion': ['ADMINISTRADOR'],
   '/dashboard/reproduccion': ['ADMINISTRADOR', 'ENCARGADO'],
   '/dashboard/personal': ['ADMINISTRADOR'],
-  '/dashboard/alertas': ['ADMINISTRADOR'],
+  '/dashboard/alertas': ['ADMINISTRADOR', 'ENCARGADO'],
+  '/dashboard/vacunacion': ['ADMINISTRADOR', 'ENCARGADO'],
   '/dashboard/actividad': ['ADMINISTRADOR'],
   '/dashboard/configuracion': ['ADMINISTRADOR'],
 
