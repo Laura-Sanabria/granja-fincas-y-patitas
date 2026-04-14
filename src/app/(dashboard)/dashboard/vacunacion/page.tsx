@@ -179,7 +179,7 @@ export default function VacunacionPage() {
             <div className="py-20 text-center">
               <Syringe className="h-12 w-12 text-gray-200 mx-auto mb-4" />
               <p className="font-bold text-gray-400">No hay esquemas registrados aún.</p>
-              <p className="text-sm text-gray-300 mt-1">Crea el primero con el botón "Nuevo Esquema"</p>
+              <p className="text-sm text-gray-300 mt-1">Crea el primero con el botón &quot;Nuevo Esquema&quot;</p>
             </div>
           ) : (
             <div className="overflow-x-auto">

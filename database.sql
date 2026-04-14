@@ -134,3 +134,73 @@ create table public.egg_production (
 alter table public.egg_production enable row level security;
 create policy "Producción Huevos visible para usuarios" on public.egg_production for select using (auth.role() = 'authenticated');
 create policy "Producción Huevos modificable por usuarios" on public.egg_production for all using (auth.role() = 'authenticated');
+
+-- ==========================================
+-- ESTRUCTURAS MINIMAS DE FASE 6 (Auditoría)
+-- ==========================================
+
+-- 12. Tabla de Logs de Auditoría
+create table public.audit_logs (
+  id uuid default gen_random_uuid() primary key,
+  table_name text not null,
+  record_id uuid not null,
+  action text check (action in ('INSERT', 'UPDATE', 'DELETE')) not null,
+  old_data jsonb,
+  new_data jsonb,
+  modified_by uuid references public.profiles(id),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.audit_logs enable row level security;
+-- Solo Administradores pueden leer la auditoría
+create policy "Audit logs visibles para administradores" on public.audit_logs for select using (
+  exists (select 1 from public.profiles where id = auth.uid() and role = 'ADMINISTRADOR')
+);
+
+-- 13. Función global de Trigger para registrar en auditoría
+create or replace function public.log_table_audit()
+returns trigger as $$
+declare
+  user_id uuid;
+begin
+  -- Extraer ID el usuario desde la sesión de Supabase
+  user_id := auth.uid();
+  
+  if (TG_OP = 'INSERT') then
+    insert into public.audit_logs (table_name, record_id, action, new_data, modified_by)
+    values (TG_TABLE_NAME, new.id, 'INSERT', row_to_json(new)::jsonb, user_id);
+    return new;
+  elsif (TG_OP = 'UPDATE') then
+    insert into public.audit_logs (table_name, record_id, action, old_data, new_data, modified_by)
+    values (TG_TABLE_NAME, new.id, 'UPDATE', row_to_json(old)::jsonb, row_to_json(new)::jsonb, user_id);
+    return new;
+  elsif (TG_OP = 'DELETE') then
+    insert into public.audit_logs (table_name, record_id, action, old_data, modified_by)
+    values (TG_TABLE_NAME, old.id, 'DELETE', row_to_json(old)::jsonb, user_id);
+    return old;
+  end if;
+  return null;
+end;
+$$ language plpgsql security definer;
+
+-- 14. Anexar triggers a tablas operativas (Descomenta al crear en base de datos)
+drop trigger if exists audit_animals_changes on public.animals;
+create trigger audit_animals_changes
+  after insert or update or delete on public.animals
+  for each row execute procedure public.log_table_audit();
+
+drop trigger if exists audit_supplies_changes on public.supplies;
+create trigger audit_supplies_changes
+  after insert or update or delete on public.supplies
+  for each row execute procedure public.log_table_audit();
+
+drop trigger if exists audit_milk_changes on public.milk_production;
+create trigger audit_milk_changes
+  after insert or update or delete on public.milk_production
+  for each row execute procedure public.log_table_audit();
+
+drop trigger if exists audit_egg_changes on public.egg_production;
+create trigger audit_egg_changes
+  after insert or update or delete on public.egg_production
+  for each row execute procedure public.log_table_audit();
+

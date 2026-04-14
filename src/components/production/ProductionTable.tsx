@@ -2,8 +2,8 @@ import React from 'react';
 import { CalendarDays, AlertCircle } from 'lucide-react';
 
 interface Props {
-  milkChart: any[];
-  eggChart: any[];
+  milkChart: Record<string, string | number>[];
+  eggChart: Record<string, string | number>[];
 }
 
 export default function ProductionTable({ milkChart, eggChart }: Props) {
@@ -11,11 +11,11 @@ export default function ProductionTable({ milkChart, eggChart }: Props) {
   const combined = milkChart.map((milk, idx) => {
     const egg = eggChart[idx];
     return {
-      date: milk.date,
-      label: milk.label,
-      milk: milk.litros,
-      eggGood: egg?.buenos || 0,
-      eggDamaged: egg?.rotos || 0,
+      date: milk.date as string,
+      label: milk.label as string,
+      milk: Number(milk.litros || 0),
+      eggGood: Number(egg?.buenos || 0),
+      eggDamaged: Number(egg?.rotos || 0),
     };
   }).reverse(); // Most recent first for the table
 
@@ -33,8 +33,8 @@ export default function ProductionTable({ milkChart, eggChart }: Props) {
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left whitespace-nowrap min-w-[700px]">
           <thead>
             <tr className="bg-white text-gray-400 font-extrabold text-[10px] uppercase tracking-widest border-b border-gray-100">
               <th className="p-5 pl-8">Fecha</th>

@@ -109,7 +109,7 @@ export async function getEggRecords(): Promise<{ data: EggProductionRecord[] | n
 
 export async function getCows() {
   const supabase = createClient();
-  let { data, error } = await (await supabase)
+  const { data, error } = await (await supabase)
     .from('animals')
     .select('id, code, notes')
     .limit(100);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Activity, Droplets, Egg, AlertTriangle } from 'lucide-react';
 
-export default function SummaryCards({ kpi }: { kpi: any }) {
+export default function SummaryCards({ kpi }: { kpi: { totalEggs: number; totalDamagedEggs: number; totalMilk: number; avgMilk: number } }) {
   const formatNumber = (num: number) => new Intl.NumberFormat('es-CO').format(num || 0);
   const dmgPercent = kpi.totalEggs > 0 ? ((kpi.totalDamagedEggs / kpi.totalEggs) * 100).toFixed(1) : 0;
 

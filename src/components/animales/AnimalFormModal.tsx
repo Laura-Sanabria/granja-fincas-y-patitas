@@ -107,7 +107,7 @@ export default function AnimalFormModal({ isOpen, onClose, onSuccess }: AnimalFo
         birth_date: formData.birth_date,
         acquisition_date: formData.acquisition_date,
         initial_weight_kg: w,
-        current_weight_kg: formData.current_weight_kg !== undefined && formData.current_weight_kg !== '' && String(formData.current_weight_kg).trim() !== ''
+        current_weight_kg: formData.current_weight_kg !== undefined && formData.current_weight_kg !== null && !isNaN(Number(formData.current_weight_kg))
           ? Number(formData.current_weight_kg)
           : undefined,
         origin,

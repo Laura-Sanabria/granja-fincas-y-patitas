@@ -88,7 +88,7 @@ export class SupabaseAnimalRepository implements IAnimalRepository {
 
     const origin: DbAnimalOrigin = payload.origin ?? 'adquirido_externo';
 
-    let birthDate = payload.birth_date?.trim() || null;
+    const birthDate = payload.birth_date?.trim() || null;
     let acquisitionDate = payload.acquisition_date?.trim() || null;
     if (!birthDate && !acquisitionDate) {
       acquisitionDate = todayLocalISODate();

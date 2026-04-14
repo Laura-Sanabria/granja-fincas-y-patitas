@@ -298,7 +298,7 @@ export class SupabaseHealthRepository implements IHealthRepository {
     const seen = new Set<string>();
 
     for (const row of rows) {
-      const animal = row.animal as Record<string, unknown> | null;
+      const animal = row.animal as unknown as Record<string, unknown> | null;
       if (!animal || (animal.status as string) !== 'activo') continue;
 
       const key = `${animal.id}-${row.vaccine_name}`;

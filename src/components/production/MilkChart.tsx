@@ -2,7 +2,7 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function MilkChart({ data }: { data: any[] }) {
+export default function MilkChart({ data }: { data: Record<string, string | number>[] }) {
   return (
     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col gap-6">
       <div>
