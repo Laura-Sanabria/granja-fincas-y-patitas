@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { MilkProductionInput, EggProductionInput, MilkProductionRecord, EggProductionRecord } from '@/types/domain/production.schema';
+import { revalidatePath } from 'next/cache';
 
 export async function createMilkRecord(data: MilkProductionInput) {
   const supabase = createClient();
@@ -28,6 +29,8 @@ export async function createMilkRecord(data: MilkProductionInput) {
     return { error: `Error de BD: ${error?.message || JSON.stringify(error)}` };
   }
 
+  revalidatePath('/dashboard/produccion');
+  revalidatePath('/dashboard/produccion/leche');
   return { success: true };
 }
 
@@ -79,6 +82,8 @@ export async function createEggRecord(data: EggProductionInput) {
     return { error: `Error de BD: ${error?.message || JSON.stringify(error)}` };
   }
 
+  revalidatePath('/dashboard/produccion');
+  revalidatePath('/dashboard/produccion/huevos');
   return { success: true };
 }
 
