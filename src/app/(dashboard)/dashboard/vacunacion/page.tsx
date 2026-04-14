@@ -131,7 +131,7 @@ export default function VacunacionPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-white border border-black/5 rounded-xl font-bold text-sm text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
               >
                 <SyringeIcon size={16} className="text-emerald-500" />
-                Vacunación Masiva
+                Aplicar Vacuna
               </button>
               <button
                 onClick={openCreate}
