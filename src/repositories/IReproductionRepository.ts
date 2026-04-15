@@ -1,15 +1,14 @@
-import type {
-  CreateReproductiveEventDTO,
-  ReproductiveEvent,
-  ReproductiveEventWithRelations,
-  ReproductiveAnimalMini,
-  UpdateReproductiveEventDTO,
+import { 
+  ReproductiveEvent, 
+  CreateReproductiveEventInput, 
+  ReproductiveEventWithRelations 
 } from '@/types/domain/reproduction.schema';
 
 export interface IReproductionRepository {
-  list(): Promise<ReproductiveEventWithRelations[]>;
-  create(data: CreateReproductiveEventDTO): Promise<ReproductiveEvent>;
-  update(id: string, data: UpdateReproductiveEventDTO): Promise<ReproductiveEvent>;
-  listAnimalsBySex(sex: 'macho' | 'hembra'): Promise<ReproductiveAnimalMini[]>;
-  listByAnimal(animalId: string): Promise<ReproductiveEventWithRelations[]>;
+  getEventsByAnimal(animalId: string): Promise<ReproductiveEvent[]>;
+  getAllEventsWithRelations(): Promise<ReproductiveEventWithRelations[]>;
+  getReproductionSummary(): Promise<{ successfulBirths: number; activeGestations: number; failures: number }>;
+  registerEvent(input: CreateReproductiveEventInput): Promise<ReproductiveEvent>;
+  updateEvent(id: string, input: Partial<ReproductiveEvent>): Promise<ReproductiveEvent>;
+  listAnimalsBySex(sex: 'hembra' | 'macho'): Promise<any[]>;
 }

@@ -52,13 +52,7 @@ export default function AnimalesPage() {
       header: 'Identificación',
       render: (a) => (
         <div className="flex flex-col">
-<<<<<<< HEAD
-          <span className="font-extrabold text-gray-900">
-            {a.name || a.species?.display_name || 'Animal'}
-          </span>
-=======
           <span className="font-extrabold text-gray-900">{animalDisplayName(a)}</span>
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
           <span className="text-xs font-bold text-[var(--brand)] font-mono">{a.code}</span>
         </div>
       )

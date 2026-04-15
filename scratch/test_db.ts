@@ -1,5 +1,5 @@
 
-import { createClient } from './src/utils/supabase/server';
+import { createClient } from '../src/utils/supabase/server';
 
 async function testQuery() {
   try {

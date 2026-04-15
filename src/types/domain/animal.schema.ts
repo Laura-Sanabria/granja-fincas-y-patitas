@@ -29,11 +29,6 @@ export type Breed = z.infer<typeof BreedSchema>;
 // --- Animales (Animals) ---
 export const AnimalStatusEnum = z.enum(['activo', 'descartado', 'vendido', 'muerto']);
 export const SexEnum = z.enum(['macho', 'hembra']);
-<<<<<<< HEAD
-export const HealthStatusEnum = z.enum(['sano', 'enfermo', 'en_tratamiento', 'cuarentena']);
-export const ReproductiveStatusEnum = z.enum(['sin_gestion_activa', 'en_gestion', 'en_parto', 'no_aplica']);
-export const VaccinationStatusEnum = z.enum(['al_dia', 'pendiente']);
-=======
 /** UI + valores devueltos por Postgres (GRANJA_DB) */
 export const HealthStatusEnum = z.enum([
   'sano',
@@ -55,7 +50,6 @@ export const ReproductiveStatusEnum = z.enum([
 ]);
 export const VaccinationStatusEnum = z.enum(['al_dia', 'pendiente', 'vencido']);
 export const AnimalOriginEnum = z.enum(['nacido_en_finca', 'adquirido_externo']);
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
 
 export const AnimalSchema = z.object({
   id: z.string().uuid(),
