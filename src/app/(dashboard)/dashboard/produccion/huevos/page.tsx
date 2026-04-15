@@ -66,28 +66,28 @@ export default async function EggProductionPage() {
                     </td>
                   </tr>
                 ) : (
-                  records.map(record => (
-                    <tr key={record.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-gray-900">{new Date(record.production_date).toLocaleDateString()}</div>
-                      </td>
-                      <td className="px-6 py-4 font-medium text-gray-800">
-                        {record.lot_name || 'Lote Desconocido'}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="font-extrabold text-amber-600 bg-amber-50 px-3 py-1 rounded-lg">
-                            {record.quantity_units} Ud
-                          </span>
-                          {(record.discarded_units || 0) > 0 && (
-                            <span className="text-xs text-red-500 font-bold flex items-center gap-1">
-                              -{record.discarded_units} rotos
+                    records.map(record => (
+                      <tr key={record.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-gray-900">{new Date(record.date).toLocaleDateString()}</div>
+                        </td>
+                        <td className="px-6 py-4 font-medium text-gray-800">
+                          {record.batch_id || 'Lote Desconocido'}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="font-extrabold text-amber-600 bg-amber-50 px-3 py-1 rounded-lg">
+                              {record.total_quantity} Ud
                             </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            {(record.damaged_quantity || 0) > 0 && (
+                              <span className="text-xs text-red-500 font-bold flex items-center gap-1">
+                                -{record.damaged_quantity} rotos
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
                 )}
               </tbody>
             </table>

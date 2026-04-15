@@ -69,7 +69,7 @@ export default async function MilkProductionPage() {
                   records.map(record => (
                     <tr key={record.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-bold text-gray-900">{new Date(record.production_date).toLocaleDateString()}</div>
+                        <div className="font-bold text-gray-900">{new Date(record.date).toLocaleDateString()}</div>
                         <div className="text-xs text-gray-500 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded mt-1">{record.shift}</div>
                       </td>
                       <td className="px-6 py-4 font-medium text-gray-800">

@@ -142,7 +142,9 @@ export class SupabaseHealthRepository implements IHealthRepository {
       .eq('is_active', true)
       .order('vaccine_name');
 
-    if (speciesId) q = q.eq('species_id', speciesId);
+    if (speciesId) {
+      q = q.or(`species_id.eq.${speciesId},species_id.is.null`);
+    }
 
     const { data, error } = await q;
     if (error) throw new Error(`Error al cargar esquemas de vacunación: ${error.message}`);

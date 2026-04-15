@@ -15,11 +15,11 @@ export async function createMilkRecord(data: MilkProductionInput) {
   const { error } = await (await supabase).from('milk_production').insert([
     {
       animal_id: data.animal_id,
-      production_date: data.date,
-      shift: ['MAÑANA', 'MAQUINARIA'].includes(data.shift) ? 'manana' : data.shift.toLowerCase(),
+      date: data.date,
+      shift: data.shift, // Ya viene validado como 'MAÑANA', 'TARDE', etc. por el esquema Zod
       quantity_liters: data.quantity_liters,
       notes: data.notes || null,
-      registered_by: userData.user.id
+      created_by: userData.user.id
     }
   ]);
 
@@ -43,7 +43,7 @@ export async function getMilkRecords(): Promise<{ data: MilkProductionRecord[] |
         notes
       )
     `)
-    .order('production_date', { ascending: false })
+    .order('date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -65,12 +65,12 @@ export async function createEggRecord(data: EggProductionInput) {
 
   const { error } = await (await supabase).from('egg_production').insert([
     {
-      lot_name: data.batch_id,
-      production_date: data.date,
-      quantity_units: data.total_quantity,
-      discarded_units: data.damaged_quantity || 0,
+      batch_id: data.batch_id,
+      date: data.date,
+      total_quantity: data.total_quantity,
+      damaged_quantity: data.damaged_quantity || 0,
       notes: data.notes || null,
-      registered_by: userData.user.id
+      created_by: userData.user.id
     }
   ]);
 
@@ -89,13 +89,13 @@ export async function getEggRecords(): Promise<{ data: EggProductionRecord[] | n
     .from('egg_production')
     .select(`
       id,
-      lot_name,
-      production_date,
-      quantity_units,
-      discarded_units,
+      batch_id,
+      date,
+      total_quantity,
+      damaged_quantity,
       notes
     `)
-    .order('production_date', { ascending: false })
+    .order('date', { ascending: false })
     .order('created_at', { ascending: false })
     .limit(50);
 
