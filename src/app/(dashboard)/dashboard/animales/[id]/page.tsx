@@ -26,33 +26,7 @@ import ServiceModal from '@/components/animales/ServiceModal';
 import AnimalTimeline from '@/components/animales/AnimalTimeline';
 import ReproductiveTab from '@/components/animales/ReproductiveTab';
 
-<<<<<<< HEAD
 type TabType = 'info' | 'health' | 'feeding' | 'repro';
-=======
-type TabType = 'info' | 'health' | 'feeding' | 'reproduction';
-
-type TimelineCategory = 'all' | 'salud' | 'vacunacion' | 'alimentacion' | 'otros';
-
-const OTHER_EVENT_TYPES: AnimalEventType[] = [
-  'ingreso',
-  'actualizacion',
-  'reproductivo',
-  'parto',
-  'produccion',
-  'egreso',
-  'correccion',
-];
-
-function categoryToServerFilter(
-  cat: TimelineCategory
-): AnimalTimelineFilter | undefined {
-  if (cat === 'all') return undefined;
-  if (cat === 'salud') return { eventTypes: ['salud'] };
-  if (cat === 'vacunacion') return { eventTypes: ['vacunacion'] };
-  if (cat === 'alimentacion') return { eventTypes: ['alimentacion'] };
-  return { eventTypes: OTHER_EVENT_TYPES };
-}
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
 
 export default function AnimalDetailPage() {
   const params = useParams();
@@ -63,12 +37,8 @@ export default function AnimalDetailPage() {
   const [animal, setAnimal] = useState<AnimalWithRelations | null>(null);
   const [timelineEvents, setTimelineEvents] = useState<AnimalEvent[]>([]);
   const [feedingHistory, setFeedingHistory] = useState<FeedingRecord[]>([]);
-<<<<<<< HEAD
   const [reproHistory, setReproHistory] = useState<ReproductiveEventWithRelations[]>([]);
   
-=======
-
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
   const [loading, setLoading] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
@@ -157,16 +127,10 @@ export default function AnimalDetailPage() {
   }, [id]);
 
   useEffect(() => {
-<<<<<<< HEAD
     if (activeTab === 'health') fetchHealthHistory();
     if (activeTab === 'feeding') fetchFeedingHistory();
     if (activeTab === 'repro') fetchReproHistory();
   }, [activeTab, id]);
-=======
-    if (activeTab === 'health') void fetchTimeline();
-    if (activeTab === 'feeding') void fetchFeedingHistory();
-  }, [activeTab, id, fetchTimeline, fetchFeedingHistory]);
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
 
   if (loading) {
     return (
@@ -195,11 +159,7 @@ export default function AnimalDetailPage() {
               <ArrowLeft size={20} />
             </button>
             <div>
-<<<<<<< HEAD
               <h1 className="text-3xl font-extrabold text-gray-900 leading-none">{animal.name || animal.species?.display_name || 'Animal'}</h1>
-=======
-              <h1 className="text-3xl font-extrabold text-gray-900 leading-none">{animalDisplayName(animal)}</h1>
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
               <div className="flex items-center gap-3 mt-2">
                 <Badge variant="neutral">{animal.code}</Badge>
                 <span className="text-sm font-bold text-gray-400">•</span>
@@ -239,17 +199,10 @@ export default function AnimalDetailPage() {
         <div className="flex border-b border-black/5 gap-8 overflow-x-auto scrollbar-hide">
           {[
             { id: 'info', label: 'Información General', icon: ClipboardList },
-<<<<<<< HEAD
             { id: 'health', label: 'Historial de Salud', icon: Heart },
             { id: 'feeding', label: 'Alimentación', icon: Utensils },
             ...(animal?.sex === 'hembra' ? [{ id: 'repro', label: 'Reproducción', icon: History }] : [])
           ].map(tab => (
-=======
-            { id: 'health', label: 'Historial integral', icon: Heart },
-            { id: 'feeding', label: 'Alimentación', icon: Utensils },
-            { id: 'reproduction', label: 'Reproducción', icon: Baby, femaleOnly: true }
-          ].filter(tab => !tab.femaleOnly || (animal?.sex === 'hembra')).map(tab => (
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
@@ -408,7 +361,6 @@ export default function AnimalDetailPage() {
           </div>
         )}
 
-<<<<<<< HEAD
         {activeTab === 'repro' && (
           <div className="animate-in fade-in slide-in-from-bottom-2">
             <div className="bg-white p-1 rounded-[2rem] shadow-sm border border-black/5 overflow-hidden">
@@ -473,24 +425,6 @@ export default function AnimalDetailPage() {
           isOpen={isHealthModalOpen} animalId={id} 
           onClose={() => setIsHealthModalOpen(false)} 
           onSuccess={() => { fetchAnimal(); if(activeTab === 'health') fetchHealthHistory(); }} 
-=======
-        {activeTab === 'reproduction' && animal && (
-          <ReproductiveTab 
-            animal={animal} 
-            onOpenService={() => setIsServiceModalOpen(true)}
-            onSuccess={fetchAnimal}
-          />
-        )}
-
-        <HealthEventModal
-          isOpen={isHealthModalOpen}
-          animalId={id}
-          onClose={() => setIsHealthModalOpen(false)}
-          onSuccess={() => {
-            void fetchAnimal();
-            if (activeTab === 'health') void fetchTimeline();
-          }}
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
         />
         <FeedingModal
           isOpen={isFeedingModalOpen}
