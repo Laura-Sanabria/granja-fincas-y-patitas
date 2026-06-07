@@ -1,4 +1,3 @@
-import { MilkProduction, EggProduction, CreateProductionDTO } from '@/types/domain/production.schema';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export class SupabaseProductionRepository {

@@ -115,17 +115,10 @@ export class SupabaseHealthRepository implements IHealthRepository {
     return event;
   }
 
-<<<<<<< HEAD
-  async getHealthAlerts(): Promise<any[]> {
-    const { data, error } = await this.supabase
-      .from('health_events')
-      .select('*, animals(*)')
-=======
   async getHealthAlerts(): Promise<unknown[]> {
     const { data, error } = await this.supabase
       .from('health_events')
       .select('*, animals(code)')
->>>>>>> c96051fed39681d8bed1ee26195098f89acf5d5e
       .eq('recovery_status', 'en_tratamiento')
       .order('detected_at', { ascending: false });
 
