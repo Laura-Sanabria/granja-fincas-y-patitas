@@ -4,15 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { RoleGuard } from '@/components/RoleGuard';
 import PageHeader from '@/components/ui/PageHeader';
 import DataTable, { Column } from '@/components/ui/DataTable';
-import Badge from '@/components/ui/Badge';
-import { BarChart3, Loader2, Droplets, Egg, Calendar, Plus } from 'lucide-react';
+import { BarChart3, Loader2, Droplets, Egg } from 'lucide-react';
 import { SupabaseProductionRepository } from '@/repositories/supabase/ProductionRepository';
 import { createClient } from '@/utils/supabase/client';
+import type { MilkProductionRecord, EggProductionRecord } from '@/types/domain/production.schema';
 
 export default function EmpleadoProduccionPage() {
-  const [milkRecords, setMilkRecords] = useState<any[]>([]);
-  const [eggRecords, setEggRecords] = useState<any[]>([]);
-  const [alerts, setAlerts] = useState<any[]>([]);
+  const [milkRecords, setMilkRecords] = useState<MilkProductionRecord[]>([]);
+  const [eggRecords, setEggRecords] = useState<EggProductionRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,26 +34,26 @@ export default function EmpleadoProduccionPage() {
     loadData();
   }, []);
 
-  const milkColumns: Column<any>[] = [
+  const milkColumns: Column<MilkProductionRecord>[] = [
     {
-      key: 'animal',
+      key: 'animal_id',
       header: 'Vaca',
       render: (item) => (
         <div className="flex flex-col">
           <span className="font-extrabold text-gray-900 text-sm">
-            {item.animals?.name || item.animals?.species?.display_name || 'Vaca'}
+            {item.animal?.code || 'Vaca'}
           </span>
-          <span className="text-[10px] font-bold text-blue-500 font-mono">{item.animals?.code}</span>
+          <span className="text-[10px] font-bold text-blue-500 font-mono">ID: {item.animal_id.slice(0, 8)}</span>
         </div>
       )
     },
     {
-      key: 'quantity',
+      key: 'quantity_liters',
       header: 'Litros',
       render: (item) => (
         <div className="flex items-center gap-1">
           <Droplets size={14} className="text-blue-500" />
-          <span className="text-sm font-black text-gray-900">{item.quantity} L</span>
+          <span className="text-sm font-black text-gray-900">{item.quantity_liters} L</span>
         </div>
       )
     },
@@ -62,31 +61,31 @@ export default function EmpleadoProduccionPage() {
       key: 'date',
       header: 'Fecha',
       render: (item) => (
-        <span className="text-xs font-bold text-gray-400 font-mono">{new Date(item.production_date).toLocaleDateString()}</span>
+        <span className="text-xs font-bold text-gray-400 font-mono">{new Date(item.date).toLocaleDateString()}</span>
       )
     }
   ];
 
-  const eggColumns: Column<any>[] = [
+  const eggColumns: Column<EggProductionRecord>[] = [
     {
-      key: 'animal',
-      header: 'Lote / Ave',
+      key: 'batch_id',
+      header: 'Lote',
       render: (item) => (
         <div className="flex flex-col">
           <span className="font-extrabold text-gray-900 text-sm">
-            {item.animals?.name || item.animals?.species?.display_name || 'Lote'}
+            {item.batch_id || 'Lote'}
           </span>
-          <span className="text-[10px] font-bold text-orange-500 font-mono">{item.animals?.code}</span>
+          <span className="text-[10px] font-bold text-orange-500 font-mono">ID: {item.id.slice(0, 8)}</span>
         </div>
       )
     },
     {
-      key: 'quantity',
+      key: 'total_quantity',
       header: 'Cantidad',
       render: (item) => (
         <div className="flex items-center gap-1">
           <Egg size={14} className="text-orange-500" />
-          <span className="text-sm font-black text-gray-900">{item.quantity_units || item.quantity} {item.unit || 'uds'}</span>
+          <span className="text-sm font-black text-gray-900">{item.total_quantity} uds</span>
         </div>
       )
     },
@@ -94,7 +93,7 @@ export default function EmpleadoProduccionPage() {
       key: 'date',
       header: 'Fecha',
       render: (item) => (
-        <span className="text-xs font-bold text-gray-400 font-mono">{new Date(item.production_date).toLocaleDateString()}</span>
+        <span className="text-xs font-bold text-gray-400 font-mono">{new Date(item.date).toLocaleDateString()}</span>
       )
     }
   ];
@@ -114,7 +113,6 @@ export default function EmpleadoProduccionPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            {/* Sección de Leche */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">
@@ -135,7 +133,6 @@ export default function EmpleadoProduccionPage() {
               </div>
             </div>
 
-            {/* Sección de Huevos */}
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">

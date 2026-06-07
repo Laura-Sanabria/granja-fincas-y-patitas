@@ -1,8 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { GestationStatus, ReproductiveEvent } from '@/types/domain/reproduction.schema';
+import type { ReproductiveEvent } from '@/types/domain/reproduction.schema';
 
-const FEMALE_CANDIDATES = ['female_animal_id', 'animal_id', 'female_id', 'mother_id', 'id_hembra', 'hembra_id'] as const;
-const MALE_CANDIDATES = ['male_animal_id', 'father_id', 'male_id', 'father_id', 'id_macho', 'macho_id'] as const;
+const FEMALE_CANDIDATES = ['animal_id', 'female_animal_id', 'female_id', 'mother_id', 'id_hembra', 'hembra_id'] as const;
+const MALE_CANDIDATES = ['father_id', 'male_animal_id', 'male_id', 'id_macho', 'macho_id'] as const;
 
 export type ReproAnimalColumnNames = { 
   female: string; 
@@ -62,23 +62,23 @@ export function getReproEventAnimalColumnNames(client: SupabaseClient): Promise<
       }
 
       // 3. Probar otros campos (status, estimated, registeredBy)
-      let status: string = 'gestation_status';
-      for (const c of ['gestation_status', 'result', 'status']) {
+      let status: string = 'result';
+      for (const c of ['result', 'gestation_status', 'status']) {
         if (await probeColumn(client, c)) { status = c; break; }
       }
 
       let estimated: string | null = null;
-      for (const c of ['estimated_birth_date', 'estimated_delivery_date']) {
+      for (const c of ['estimated_delivery_date', 'estimated_birth_date']) {
         if (await probeColumn(client, c)) { estimated = c; break; }
       }
 
-      let registeredBy: string = 'registered_by';
-      for (const c of ['registered_by', 'responsible', 'user_id']) {
+      let registeredBy: string = 'responsible';
+      for (const c of ['responsible', 'registered_by', 'user_id']) {
         if (await probeColumn(client, c)) { registeredBy = c; break; }
       }
 
-      let maleExternal: string = 'male_external';
-      for (const c of ['male_external', 'father_external']) {
+      let maleExternal: string = 'father_external';
+      for (const c of ['father_external', 'male_external']) {
         if (await probeColumn(client, c)) { maleExternal = c; break; }
       }
 
@@ -105,20 +105,20 @@ export function getReproEventAnimalColumnNames(client: SupabaseClient): Promise<
   return cachedColumns;
 }
 
-/** Convierte una fila cruda de PostgREST al modelo interno (siempre usa female_animal_id / male_animal_id). */
+/** Convierte una fila cruda de PostgREST al modelo interno. */
 export function rowToReproductiveEvent(
   row: Record<string, unknown>,
   cols?: ReproAnimalColumnNames
 ): ReproductiveEvent {
   // Priorizar las columnas encontradas por el buscador dinámico, de lo contrario buscar candidatos genéricos
-  const female = cols ? row[cols.female] : (row.female_animal_id ?? row.animal_id ?? row.female_id ?? row.mother_id);
-  const male = cols && cols.male ? row[cols.male] : (row.male_animal_id ?? row.father_id ?? row.male_id ?? row.father_id ?? null);
+  const female = cols ? row[cols.female] : (row.animal_id ?? row.female_animal_id ?? row.female_id ?? row.mother_id);
+  const male = cols && cols.male ? row[cols.male] : (row.father_id ?? row.male_animal_id ?? row.male_id ?? null);
   
   // Mapeo dinámico de otros campos
-  const gestStatus = (cols ? row[cols.status] : (row.gestation_status || row.result || 'en_seguimiento')) as GestationStatus;
-  const estBirthDate = (cols?.estimated ? row[cols.estimated] : (row.estimated_birth_date || row.estimated_delivery_date)) as string | null | undefined;
-  const regBy = cols ? row[cols.registeredBy] : (row.registered_by || row.responsible || row.user_id);
-  const maleExt = cols ? row[cols.maleExternal] : (row.male_external || row.father_external);
+  const resultValue = (cols ? row[cols.status] : (row.result || row.gestation_status || 'pendiente')) as any;
+  const estDeliveryDate = (cols?.estimated ? row[cols.estimated] : (row.estimated_delivery_date || row.estimated_birth_date)) as string | null | undefined;
+  const resp = cols ? row[cols.registeredBy] : (row.responsible || row.registered_by || row.user_id);
+  const maleExt = cols ? row[cols.maleExternal] : (row.father_external || row.male_external);
   const evType = cols ? row[cols.eventType] : (row.event_type || row.service_type);
 
   if (!female) {
@@ -128,18 +128,17 @@ export function rowToReproductiveEvent(
 
   return {
     id: String(row.id),
-    female_animal_id: String(female),
-    male_animal_id: male ? String(male) : null,
-    event_type: evType as ReproductiveEvent['event_type'],
+    animal_id: String(female),
+    father_id: male ? String(male) : null,
+    event_type: evType as any,
     event_date: String(row.event_date),
-    male_external: (maleExt as string | null | undefined) ?? null,
-    gestation_status: gestStatus,
-    estimated_birth_date: estBirthDate ? String(estBirthDate) : null,
-    actual_birth_date: (row.actual_birth_date as string | null | undefined) ?? null,
-    failure_reason: (row.failure_reason as string | null | undefined) ?? null,
+    father_external: (maleExt as string | null | undefined) ?? null,
+    result: resultValue,
+    estimated_delivery_date: estDeliveryDate ? String(estDeliveryDate) : null,
     notes: (row.notes as string | null | undefined) ?? null,
-    registered_by: String(regBy),
+    responsible: String(resp || 'Desconocido'),
+    registered_by: row.registered_by ? String(row.registered_by) : null,
     created_at: row.created_at as string | undefined,
-    updated_at: row.updated_at as string | undefined,
+    offspring_count: typeof row.offspring_count === 'number' ? row.offspring_count : 0,
   };
 }
